@@ -1,0 +1,4 @@
+-cp src
+-main Test
+-neko bin/lextest.n
+-dce full
