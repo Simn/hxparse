@@ -1,40 +1,9 @@
-import hxparse.Lexer;
+import Data;
 import haxe.macro.Expr;
+import hxparse.Lexer;
 
-enum TokenDef {
-	Const(c:haxe.macro.Expr.Constant);
-	Sharp(s:String);
-	Dollar(s:String);
-	Unop(op:haxe.macro.Expr.Unop);
-	Binop(op:haxe.macro.Expr.Binop);
-	Comment(s:String);
-	CommentLine(s:String);
-	Semicolon;
-	Dot;
-	DblDot;
-	Arrow;
-	Comma;
-	BkOpen;
-	BkClose;
-	BrOpen;
-	BrClose;
-	POpen;
-	PClose;
-	Question;
-	At;
-}
+class TestLexer extends Lexer {
 
-typedef Token = {
-	token: TokenDef,
-	pos: hxparse.Lexer.Pos
-}
-
-/**
- * Lexer test file.
- * This comment is just here to test if it is lexed correctly.
- */
-class Test implements hxparse.RuleBuilder {
-	
 	static function mk(lexer:Lexer, td) {
 		return {
 			token: td,
@@ -42,13 +11,18 @@ class Test implements hxparse.RuleBuilder {
 		}
 	}
 	
+	// @:keywords generates a map with lowercase enum constructor names as keys
+	// and the constructor itself as value
+	static var keywords = @:mapping Data.Keyword;
+	
 	static var buf = new StringBuf();
 	
 	static var ident = "_*[a-z][a-zA-Z0-9_]*";
 	static var idtype = "_*[A-Z][a-zA-Z0-9_]*";
 	
-	static var token = @:rule [
-		"[\r\n\t ]" => lexer.token(token),
+	// @:rule wraps the expression to the right of => with function(lexer) return
+	public static var tok = @:rule [
+		"[\r\n\t ]" => lexer.token(tok),
 		"0x[0-9a-fA-F]+" => mk(lexer, Const(CInt(lexer.current))),
 		"[0-9]+" => mk(lexer, Const(CInt(lexer.current))),
 		"[0-9]+.[0-9]+" => mk(lexer, Const(CFloat(lexer.current))),
@@ -117,11 +91,17 @@ class Test implements hxparse.RuleBuilder {
 		},
 		"#" + ident => mk(lexer, Sharp(lexer.current.substr(1))),
 		"$" + ident => mk(lexer, Dollar(lexer.current.substr(1))),
-		ident => mk(lexer, Const(CIdent(lexer.current))),
+		ident => {
+			var kwd = keywords.get(lexer.current);
+			if (kwd != null)
+				mk(lexer, Kwd(kwd));
+			else
+				mk(lexer, Const(CIdent(lexer.current)));
+		},
 		idtype => mk(lexer, Const(CIdent(lexer.current))),
 	];
 	
-	static var string = @:rule [
+	public static var string = @:rule [
 		"\\\\\\\\" => {
 			buf.add("\\");
 			lexer.token(string);
@@ -149,7 +129,7 @@ class Test implements hxparse.RuleBuilder {
 		}
 	];
 	
-	static var string2 = @:rule [
+	public static var string2 = @:rule [
 		"\\\\\\\\" => {
 			buf.add("\\");
 			lexer.token(string2);
@@ -177,7 +157,7 @@ class Test implements hxparse.RuleBuilder {
 		}
 	];
 	
-	static var comment = @:rule [
+	public static var comment = @:rule [
 		"\\*/" => lexer.curPos().pmax,
 		"\\*" => {
 			buf.add("*");
@@ -188,25 +168,4 @@ class Test implements hxparse.RuleBuilder {
 			lexer.token(comment);
 		}
 	];
-	
-	static function main() {
-		var path = Sys.args();
-		if (path.length != 1)
-			throw "Usage: lextest [path]";
-		var i = sys.io.File.read(path[0], true);
-		var lexer = new Lexer(i, path[0]);
-		var buf = new StringBuf();
-		try {
-			while (true) {
-				buf.add(lexer.token(token).token + "\n");
-			}
-		} catch (e:String) {
-			var c = lexer.char();
-			// c == null is Eof (I hope)
-			if (c != null) {
-				throw "Unexpected " +String.fromCharCode(c) + (lexer.curPos());
-			}
-		}
-		Sys.print(buf.toString());
-	}
 }
