@@ -8,6 +8,7 @@ typedef Pos = {
 	var pmax : Int;
 }
 
+@:autoBuild(hxparse.RuleBuilder.build())
 class Lexer {
 	public var current:String;
 	var buffer:haxe.io.Bytes;
@@ -21,6 +22,7 @@ class Lexer {
 	var line:Int;
 	var pos:Int;
 	var carriage:Bool;
+	public var eof(default, null):Bool;
 	
 	public function new(input:haxe.io.Input, sourceName:String = "<null>") {
 		var bufsize = 4096;
@@ -36,6 +38,7 @@ class Lexer {
 		source = sourceName;
 		line = 0;
 		pos = 0;
+		eof = false;
 	}
 	
 	public function curPos() {
@@ -93,6 +96,8 @@ class Lexer {
 	}
 
 	public function token<T>(ruleset:Ruleset<T>):T {
+		if (eof)
+			throw new haxe.io.Eof();
 		var state = ruleset.engine.firstState();
 		var n = 0;
 		var cur = 0;
@@ -132,6 +137,7 @@ class Lexer {
 				n++;
 			}
 		} catch (e:haxe.io.Eof) {
+			eof = true;
 			process(true);
 		} catch (e:String) {
 			process(false);
