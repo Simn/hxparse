@@ -288,13 +288,13 @@ class LexEngine<T> {
 		while( i < l ) {
 			var c = StringTools.fastCodeAt(pattern,i++);
 			switch( c ) {
-			case '+'.code:
+			case '+'.code if (r != Empty):
 				r = plus(r);
-			case '*'.code:
+			case '*'.code if (r != Empty):
 				r = star(r);
-			case '?'.code:
+			case '?'.code if (r != Empty):
 				r = opt(r);
-			case '['.code:
+			case '['.code if (pattern.length > 1):
 				var range = 0;
 				var acc = [];
 				var not = StringTools.fastCodeAt(pattern, i) == '^'.code;

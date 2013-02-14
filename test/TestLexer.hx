@@ -27,16 +27,16 @@ class TestLexer extends Lexer {
 		"[0-9]+" => mk(lexer, Const(CInt(lexer.current))),
 		"[0-9]+.[0-9]+" => mk(lexer, Const(CFloat(lexer.current))),
 		"//[^\n\r]*" => mk(lexer, CommentLine(lexer.current.substr(2))),
-		"\\+\\+" => mk(lexer,Unop(OpIncrement)),
+		"+\\+" => mk(lexer,Unop(OpIncrement)),
 		"--" => mk(lexer,Unop(OpDecrement)),
 		"~" => mk(lexer,Unop(OpNegBits)),
 		"%=" => mk(lexer,Binop(OpAssignOp(OpMod))),
 		"&=" => mk(lexer,Binop(OpAssignOp(OpAnd))),
 		"|=" => mk(lexer,Binop(OpAssignOp(OpOr))),
 		"^=" => mk(lexer,Binop(OpAssignOp(OpXor))),
-		"\\+=" => mk(lexer,Binop(OpAssignOp(OpAdd))),
+		"+=" => mk(lexer,Binop(OpAssignOp(OpAdd))),
 		"-=" => mk(lexer,Binop(OpAssignOp(OpSub))),
-		"\\*=" => mk(lexer,Binop(OpAssignOp(OpMult))),
+		"*=" => mk(lexer,Binop(OpAssignOp(OpMult))),
 		"/=" => mk(lexer,Binop(OpAssignOp(OpDiv))),
 		"==" => mk(lexer,Binop(OpEq)),
 		"!=" => mk(lexer,Binop(OpNotEq)),
@@ -58,18 +58,18 @@ class TestLexer extends Lexer {
 		"&" => mk(lexer,Binop(OpAnd)),
 		"|" => mk(lexer,Binop(OpOr)),
 		"^" => mk(lexer,Binop(OpXor)),
-		"\\+" => mk(lexer,Binop(OpAdd)),
-		"\\*" => mk(lexer,Binop(OpMult)),
+		"+" => mk(lexer,Binop(OpAdd)),
+		"*" => mk(lexer,Binop(OpMult)),
 		"/" => mk(lexer,Binop(OpDiv)),
 		"-" => mk(lexer,Binop(OpSub)),
 		"=" => mk(lexer,Binop(OpAssign)),
-		"\\[" => mk(lexer, BkOpen),
-		"\\]" => mk(lexer, BkClose),
+		"[" => mk(lexer, BkOpen),
+		"]" => mk(lexer, BkClose),
 		"{" => mk(lexer, BrOpen),
 		"}" => mk(lexer, BrClose),
 		"(" => mk(lexer, POpen),
 		")" => mk(lexer, PClose),
-		"\\?" => mk(lexer, Question),
+		"?" => mk(lexer, Question),
 		"@" => mk(lexer, At),
 		'"' => {
 			buf = new StringBuf();
@@ -158,8 +158,8 @@ class TestLexer extends Lexer {
 	];
 	
 	public static var comment = @:rule [
-		"\\*/" => lexer.curPos().pmax,
-		"\\*" => {
+		"*/" => lexer.curPos().pmax,
+		"*" => {
 			buf.add("*");
 			lexer.token(comment);
 		},
