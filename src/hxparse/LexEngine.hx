@@ -281,8 +281,7 @@ class LexEngine<T> {
 		return out;
 	}
 
-	static function parseInner( pattern : String ) : Pattern {
-		var i = 0;
+	static function parseInner( pattern : String, i : Int = 0 ) : Pattern {
 		var r = Empty;
 		var l = pattern.length;
 		while( i < l ) {
@@ -294,6 +293,8 @@ class LexEngine<T> {
 				r = star(r);
 			case '?'.code if (r != Empty):
 				r = opt(r);
+			case '|'.code if (r != Empty):
+				return Choice(r, parseInner(pattern, i));
 			case '['.code if (pattern.length > 1):
 				var range = 0;
 				var acc = [];
@@ -340,5 +341,4 @@ class LexEngine<T> {
 		}
 		return r;
 	}
-	
 }

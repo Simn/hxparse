@@ -17,7 +17,7 @@ class TestLexer extends Lexer {
 	
 	static var buf = new StringBuf();
 	
-	static var ident = "_*[a-z][a-zA-Z0-9_]*";
+	static var ident = "_*[a-z][a-zA-Z0-9_]*|_+|_+[0-9][_a-zA-Z0-9]*";
 	static var idtype = "_*[A-Z][a-zA-Z0-9_]*";
 	
 	// @:rule wraps the expression to the right of => with function(lexer) return
@@ -26,6 +26,9 @@ class TestLexer extends Lexer {
 		"0x[0-9a-fA-F]+" => mk(lexer, Const(CInt(lexer.current))),
 		"[0-9]+" => mk(lexer, Const(CInt(lexer.current))),
 		"[0-9]+.[0-9]+" => mk(lexer, Const(CFloat(lexer.current))),
+		".[0-9]+" => mk(lexer, Const(CFloat(lexer.current))),
+		"[0-9]+[eE][\\+\\-]?[0-9]+" => mk(lexer,Const(CFloat(lexer.current))),
+		"[0-9]+.[0-9]*[eE][\\+\\-]?[0-9]+" => mk(lexer,Const(CFloat(lexer.current))),
 		"//[^\n\r]*" => mk(lexer, CommentLine(lexer.current.substr(2))),
 		"+\\+" => mk(lexer,Unop(OpIncrement)),
 		"--" => mk(lexer,Unop(OpDecrement)),
@@ -42,7 +45,7 @@ class TestLexer extends Lexer {
 		"!=" => mk(lexer,Binop(OpNotEq)),
 		"<=" => mk(lexer,Binop(OpLte)),
 		"&&" => mk(lexer,Binop(OpBoolAnd)),
-		"||" => mk(lexer,Binop(OpBoolOr)),
+		"|\\|" => mk(lexer,Binop(OpBoolOr)),
 		"<<" => mk(lexer,Binop(OpShl)),
 		"->" => mk(lexer,Arrow),
 		"..." => mk(lexer,Binop(OpInterval)),
