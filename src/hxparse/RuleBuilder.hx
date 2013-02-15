@@ -2,12 +2,16 @@ package hxparse;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.Type;
 
 using Lambda;
 using haxe.macro.Tools;
 
-class RuleBuilder {
+#if !macro
+@:autoBuild(hxparse.RuleBuilderImpl.build())
+#end
+interface RuleBuilder { }
+
+class RuleBuilderImpl {
 	macro static public function build():Array<Field> {
 		var fields = Context.getBuildFields();
 		for (field in fields) {
@@ -28,6 +32,7 @@ class RuleBuilder {
 		return fields;
 	}
 	
+	#if macro
 	static function transformRule(field:Field, e:Expr) {
 		var el = switch(e.expr) {
 			case EArrayDecl(el): el;
@@ -61,4 +66,6 @@ class RuleBuilder {
 		var e = macro $a{sl};
 		field.kind = FVar(null, e);
 	}
+	
+	#end
 }

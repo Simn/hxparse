@@ -8,7 +8,6 @@ typedef Pos = {
 	var pmax : Int;
 }
 
-@:autoBuild(hxparse.RuleBuilder.build())
 class Lexer {
 	public var current:String;
 	var buffer:haxe.io.Bytes;

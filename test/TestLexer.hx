@@ -2,7 +2,7 @@ import Data;
 import haxe.macro.Expr;
 import hxparse.Lexer;
 
-class TestLexer extends Lexer {
+class TestLexer extends Lexer implements hxparse.RuleBuilder {
 
 	static function mk(lexer:Lexer, td) {
 		return {
