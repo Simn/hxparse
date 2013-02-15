@@ -1,3 +1,5 @@
+import haxe.macro.Expr;
+
 enum Keyword {
 	Function;
 	Class;
@@ -69,6 +71,28 @@ enum TokenDef {
 }
 
 typedef Token = {
-	token: TokenDef,
+	tok: TokenDef,
 	pos: hxparse.Lexer.Pos
+}
+
+typedef Definition<A,B> = {
+	name : String,
+	doc: String,
+	params: Array<TypeParamDecl>,
+	meta: Array<Metadata>,
+	flags: Array<A>,
+	data: B
+}
+
+enum TypeDef {
+	EImport(sl:Array<String>);
+	EClass(d:Definition<ClassFlag, Array<Field>>);
+}
+
+enum ClassFlag {
+	HInterface;
+	HExtern;
+	HPrivate;
+	HExtends;
+	HImplements;
 }

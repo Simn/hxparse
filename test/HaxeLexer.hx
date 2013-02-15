@@ -2,11 +2,11 @@ import Data;
 import haxe.macro.Expr;
 import hxparse.Lexer;
 
-class TestLexer extends Lexer implements hxparse.RuleBuilder {
+class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 
 	static function mk(lexer:Lexer, td) {
 		return {
-			token: td,
+			tok: td,
 			pos: lexer.curPos()
 		}
 	}

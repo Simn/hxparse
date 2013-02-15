@@ -1,30 +1,23 @@
 package hxparse;
 import hxparse.Types;
-import hxparse.Stream;
 
-class LexerStream<T> implements Stream<T> {
+class LexerStream<T> {
 
 	var lexer:Lexer;
-	var buffer:Array<T>;
+	var lookahead:T;
 	var ruleset:Ruleset<T>;
 	
 	public function new(lexer:Lexer, ruleset:Ruleset<T>) {
 		this.lexer = lexer;
 		this.ruleset = ruleset;
-		buffer = [];
+		lookahead = lexer.token(ruleset);
 	}
 
-	public function peek():Null<T> {
-		if (buffer.length == 0) {
-			buffer.push(lexer.token(ruleset));
-		}
-		return buffer[0];
+	public inline function peek():Null<T> {
+		return lookahead;
 	}
 	
-	public function junk():Void {
-		if (buffer.length > 0)
-			buffer.shift();
-		else
-			lexer.token(ruleset);
+	public inline function junk():Void {
+		lookahead = lexer.token(ruleset);
 	}
 }

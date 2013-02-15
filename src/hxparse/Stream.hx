@@ -1,6 +1,6 @@
 package hxparse;
 
-interface Stream<T> {
+typedef Stream<T> = {
 	public function peek():Null<T>;
 	public function junk():Void;
 }
