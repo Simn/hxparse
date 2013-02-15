@@ -1,5 +1,7 @@
 -cp src
 -cp test
 -main Test
--neko bin/lextest.n
 -dce full
+--each
+
+-neko bin/lextest.n

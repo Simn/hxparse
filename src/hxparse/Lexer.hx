@@ -95,8 +95,12 @@ class Lexer {
 	}
 
 	public function token<T>(ruleset:Ruleset<T>):T {
-		if (eof)
-			throw new haxe.io.Eof();
+		if (eof) {
+			if (ruleset.eofFunction != null)
+				return ruleset.eofFunction(this);
+			else
+				throw new haxe.io.Eof();
+		}
 		var state = ruleset.engine.firstState();
 		var n = 0;
 		var cur = 0;
@@ -150,10 +154,15 @@ class Lexer {
 	static public function build<Token>(rules:Map<String,Lexer->Token>) {
 		var cases = [];
 		var functions = [];
+		var eofFunction = null;
 		for (k in rules.keys()) {
-			cases.push(LexEngine.parse(k));
-			functions.push(rules.get(k));
+			if (k == "") {
+				eofFunction = rules.get(k);
+			} else {
+				cases.push(LexEngine.parse(k));
+				functions.push(rules.get(k));
+			}
 		}
-		return new Ruleset(new LexEngine(cases),functions);
+		return new Ruleset(new LexEngine(cases),functions,eofFunction);
 	}
 }

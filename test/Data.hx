@@ -65,6 +65,7 @@ enum TokenDef {
 	PClose;
 	Question;
 	At;
+	Eof;
 }
 
 typedef Token = {

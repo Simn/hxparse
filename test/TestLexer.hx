@@ -22,6 +22,7 @@ class TestLexer extends Lexer implements hxparse.RuleBuilder {
 	
 	// @:rule wraps the expression to the right of => with function(lexer) return
 	public static var tok = @:rule [
+		"" => mk(lexer, Eof),
 		"[\r\n\t ]" => lexer.token(tok),
 		"0x[0-9a-fA-F]+" => mk(lexer, Const(CInt(lexer.current))),
 		"[0-9]+" => mk(lexer, Const(CInt(lexer.current))),
