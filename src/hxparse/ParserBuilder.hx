@@ -11,7 +11,7 @@ class ParserBuilder {
 		for (field in fields) {
 			switch(field.kind) {
 				case FFun(fun) if (fun.expr != null):
-					fun.expr = map(fun.expr);
+					fun.expr = map(true, fun.expr);
 				case _:
 			}
 		}
@@ -28,23 +28,40 @@ class ParserBuilder {
 		});
 	}
 	
-	static function map(e:Expr) {
+	static function map(needVal:Bool, e:Expr) {
 		return switch(e.expr) {
 			case ESwitch({expr: EConst(CIdent("stream"))}, cl, edef):
 				if (edef != null)
 					cl.push({values: [macro _], expr: edef, guard: null});
-				transformCases(cl);
-			case _: e.map(map);
+				transformCases(needVal, cl);
+			case EBlock([]):
+				e;
+			case EBlock(el):
+				var elast = el.pop();
+				var el = el.map(map.bind(false));
+				el.push(map(true, elast));
+				macro $b{el};
+			case _: e.map(map.bind(true));
 		}
 	}
 	
-	static function transformCases(cl:Array<Case>) {
+	static var fcount = 0;
+	
+	static function transformCases(needVal:Bool, cl:Array<Case>) {
 		var last = cl.pop();
+		var funcs = [];
+		function mkFunc(e) {
+			var name = "__func" +fcount++;
+			var e = needVal ? (macro function $name() return $e) : macro function $name() $e;
+			funcs.push(e);
+			return macro $i{name}();
+		}
 		var elast = makeCase(last, macro null);
 		while (cl.length > 0) {
-			elast = makeCase(cl.pop(), elast);
+			elast = makeCase(cl.pop(), mkFunc(elast));
 		}
-		return elast;
+		funcs.push(elast);
+		return macro @:pos(elast.pos) $b{funcs};
 	}
 	
 	static function makeCase(c:Case, def:Expr) {
@@ -57,14 +74,14 @@ class ParserBuilder {
 				Context.error("Comma notation is not allowed while matching streams", punion(c.values[0].pos, c.values[c.values.length - 1].pos));
 		var pl = switch(pat.expr) {
 			case EArrayDecl(el): el;
-			case EConst(CIdent("_")): return macro ${c.expr};
+			case EConst(CIdent("_")): return macro ${map(true, c.expr)};
 			case _: Context.error("Expected [ patterns ]", pat.pos);
 		}
 		var last = pl.pop();
 		function getDef(e) {
-			return pl.length == 0 ? def : macro throw new hxparse.Parser.Unexpected(__token__);
+			return pl.length == 0 ? def : macro @:pos(e.pos) throw new hxparse.Parser.Unexpected(peek());
 		}
-		var plast = makePattern(last, map(c.expr), getDef(pat) );
+		var plast = makePattern(last, map(true, c.expr), getDef(pat) );
 		while (pl.length > 0) {
 			var pat = pl.pop();
 			plast = makePattern(pat, plast, getDef(pat));
@@ -79,24 +96,22 @@ class ParserBuilder {
 					var $s = $e2;
 					if ($i{s} != null) {
 						$e;
-					} else {
-						var __token__ = $i{s};
+					} else
 						$def;
-					}
 				}
 			case EBinop(OpBoolAnd, e1, e2):
 				macro @:pos(pat.pos) switch peek() {
 					case $e1 if ($e2):
 						junk();
 						$e;
-					case __token__: $def;
+					case _: $def;
 				}
 			case _:
 				macro @:pos(pat.pos) switch peek() {
 					case $pat:
 						junk();
 						$e;
-					case __token__: $def;
+					case _: $def;
 				}
 		}
 	}
