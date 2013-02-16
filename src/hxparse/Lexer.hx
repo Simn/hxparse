@@ -56,7 +56,7 @@ class Lexer {
 			bin++;
 			incLine(c);
 			return c;
-		} catch (e:Dynamic) {
+		} catch (e:haxe.io.Eof) {
 			return null;
 		}
 	}
