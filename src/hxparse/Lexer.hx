@@ -60,7 +60,7 @@ class Lexer {
 			return null;
 		}
 	}
-	
+		
 	function read() {
 		if (bin == 0) {
 			if (bpos == bsize) {
@@ -164,5 +164,14 @@ class Lexer {
 			}
 		}
 		return new Ruleset(new LexEngine(cases),functions,eofFunction);
+	}
+	
+	static public function posUnion(p1:Pos, p2:Pos) {
+		return {
+			psource: p1.psource,
+			pline: p1.pline,
+			pmin: p1.pmin < p2.pmin ? p1.pmin : p2.pmin,
+			pmax: p1.pmax > p2.pmax ? p1.pmax : p2.pmax,
+		};
 	}
 }
