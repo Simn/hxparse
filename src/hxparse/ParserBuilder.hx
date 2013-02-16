@@ -12,7 +12,6 @@ class ParserBuilder {
 			switch(field.kind) {
 				case FFun(fun) if (fun.expr != null):
 					fun.expr = map(fun.expr);
-					trace(fun.expr.toString());
 				case _:
 			}
 		}

@@ -3,9 +3,9 @@ import hxparse.Types;
 
 class LexerStream<T> {
 
+	public var ruleset:Ruleset<T>;
 	var lexer:Lexer;
 	var lookahead:T;
-	var ruleset:Ruleset<T>;
 	
 	public function new(lexer:Lexer, ruleset:Ruleset<T>) {
 		this.lexer = lexer;
