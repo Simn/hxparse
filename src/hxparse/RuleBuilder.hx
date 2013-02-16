@@ -14,41 +14,55 @@ interface RuleBuilder { }
 class RuleBuilderImpl {
 	macro static public function build():Array<Field> {
 		var fields = Context.getBuildFields();
+		var fieldExprs = new Map();
+		var delays = [];
+		var ret = [];
 		for (field in fields) {
-			if (!field.access.exists(function(a) return a == AStatic))
-				continue;
-			switch(field.kind) {
-				case FVar(_, e) if (e != null):
-					switch(e.expr) {
-						case EMeta({name: ":rule"}, e):
-							transformRule(field,e);
-						case EMeta({name: ":mapping"}, e):
-							transformMapping(field,e);
-						case _:
-					}
-				case _:
+			if (field.access.exists(function(a) return a == AStatic))
+				switch(field.kind) {
+					case FVar(_, e) if (e != null):
+						switch(e.expr) {
+							case EMeta({name: ":rule"}, e):
+								delays.push(transformRule.bind(field, e, fieldExprs));
+							case EMeta({name: ":mapping"}, e):
+								delays.push(transformMapping.bind(field,e));
+							case _:
+								fieldExprs.set(field.name, e);
+						}
+					case _:
+				}
+			if (!field.meta.exists(function(m) return m.name == ":ruleHelper")) {
+				ret.push(field);
 			}
 		}
-		return fields;
+		for (delay in delays)
+			delay();
+		return ret;
 	}
 	
 	#if macro
-	static function transformRule(field:Field, e:Expr) {
+	static function transformRule(field:Field, e:Expr, fields:Map<String,Expr>) {
 		var el = switch(e.expr) {
 			case EArrayDecl(el): el;
 			case _: Context.error("Expected pattern => function map declaration", e.pos);
 		}
 		var el = el.map(function(e) {
-			return switch(e) {
-				case macro $rule => $e:
-					macro  @:pos(e.pos) $rule => function(lexer:hxparse.Lexer) return $e;
-				case _:
-					Context.error("Expected pattern => function", e.pos);
+			function loop(e:Expr) {
+				return switch(e) {
+					case macro $rule => $e:
+						macro  @:pos(e.pos) $rule => function(lexer:hxparse.Lexer) return $e;
+					case {expr: EConst(CIdent(s)) } if (fields.exists(s)):
+						loop(fields.get(s));
+					case _:
+						Context.error("Expected pattern => function", e.pos);
+				}
 			}
+			return loop(e);
 		});
 		var e = macro $a{el};
 		var e = macro hxparse.Lexer.build($e);
 		field.kind = FVar(null, e);
+		return e;
 	}
 	
 	static function transformMapping(field:Field, e:Expr) {
@@ -65,6 +79,7 @@ class RuleBuilderImpl {
 		}
 		var e = macro $a{sl};
 		field.kind = FVar(null, e);
+		return e;
 	}
 	
 	#end
