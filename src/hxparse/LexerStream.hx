@@ -14,10 +14,12 @@ class LexerStream<T> {
 	}
 
 	public inline function peek():Null<T> {
+		if (lookahead == null)
+			lookahead = lexer.token(ruleset);
 		return lookahead;
 	}
 	
 	public inline function junk():Void {
-		lookahead = lexer.token(ruleset);
+		lookahead = null;
 	}
 }

@@ -146,7 +146,7 @@ class Lexer {
 			process(false);
 		}
 		if (state == null || state.finals.length == 0)
-			throw "Unexpected";
+			throw "Unexpected " + String.fromCharCode(char());
 		// TODO: [0] doesn't seem right
 		return ruleset.functions[state.finals[0].pid](this);
 	}
