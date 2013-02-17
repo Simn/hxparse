@@ -48,10 +48,10 @@ class RuleBuilderImpl {
 		}
 		var el = el.map(function(e) {
 			function loop(e:Expr) {
-				return switch(e) {
-					case macro $rule => $e:
-						macro  @:pos(e.pos) $rule => function(lexer:hxparse.Lexer) return $e;
-					case {expr: EConst(CIdent(s)) } if (fields.exists(s)):
+				return switch(e.expr) {
+					case EBinop(OpArrow, rule, e):
+						macro @:pos(e.pos) $rule => function(lexer:hxparse.Lexer) return $e;
+					case EConst(CIdent(s)) if (fields.exists(s)):
 						loop(fields.get(s));
 					case _:
 						Context.error("Expected pattern => function", e.pos);

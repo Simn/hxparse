@@ -4,6 +4,18 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 
 using haxe.macro.Tools;
+using Lambda;
+
+typedef ParserCase = {
+	expr: Expr,
+	head: Expr,
+	tail: Array<Expr>
+}
+
+enum CaseGroup {
+	Simple(group:Array<ParserCase>);
+	Complex(c:ParserCase);
+}
 
 class ParserBuilder {
 	static public function build():Array<haxe.macro.Field> {
@@ -48,45 +60,69 @@ class ParserBuilder {
 	static var fcount = 0;
 	
 	static function transformCases(needVal:Bool, cl:Array<Case>) {
-		var last = cl.pop();
-		var funcs = [];
-		function mkFunc(e) {
-			var name = "__func" +fcount++;
-			var e = needVal ? (macro function $name() return $e) : macro function $name() $e;
-			funcs.push(e);
-			return macro $i{name}();
+		var groups = [];
+		var group = [];
+		var def = macro null;
+		for (c in cl) {
+			switch(c.values) {
+				case [{expr:EArrayDecl(el)}]:
+					var head = el.shift();
+					var chead = {head:head, tail: el, expr:map(true,c.expr)};
+					switch(head.expr) {
+						case EBinop(_):
+							if (group.length > 0) groups.push(Simple(group));
+							groups.push(Complex(chead));
+							group = [];
+						case _:
+							group.push(chead);
+					}
+				case [{expr:EConst(CIdent("_"))}]:
+					def = map(true, c.expr);
+				case [e]:
+					Context.error("Expected [ patterns ]", e.pos);
+				case _:
+					Context.error("Comma notation is not allowed while matching streams", punion(c.values[0].pos, c.values[c.values.length - 1].pos));
+			}
 		}
-		var elast = makeCase(last, macro null);
-		while (cl.length > 0) {
-			elast = makeCase(cl.pop(), mkFunc(elast));
+		if (group.length > 0)
+			groups.push(Simple(group));
+			
+		var last = groups.pop();
+		var elast = makeCase(last,def);
+		while (groups.length > 0) {
+			elast = makeCase(groups.pop(), elast);
 		}
-		funcs.push(elast);
-		return macro @:pos(elast.pos) $b{funcs};
+		return elast;
 	}
 	
-	static function makeCase(c:Case, def:Expr) {
-		if (c.expr == null)
-			Context.error("Missing expression", c.values[0].pos);
-		var pat =
-			if (c.values.length == 1)
-				c.values[0];
-			else if (c.values.length > 1)
-				Context.error("Comma notation is not allowed while matching streams", punion(c.values[0].pos, c.values[c.values.length - 1].pos));
-		var pl = switch(pat.expr) {
-			case EArrayDecl(el): el;
-			case EConst(CIdent("_")): return macro ${map(true, c.expr)};
-			case _: Context.error("Expected [ patterns ]", pat.pos);
+	static var unexpected = macro throw new hxparse.Parser.Unexpected(peek());
+		
+	static function makeCase(g:CaseGroup, def:Expr) {
+		return switch(g) {
+			case Simple(group):
+				var cl = group.map(makeInner);
+				cl.iter(function(c) {
+					c.expr = macro { junk(); ${c.expr}; };
+				});
+				{
+					pos: def.pos,
+					expr: ESwitch(macro peek(), cl, def)
+				}
+			case Complex(c):
+				var inner = makeInner(c);
+				makePattern(c.head, inner.expr, def);
 		}
-		var last = pl.pop();
-		function getDef(e) {
-			return pl.length == 0 ? def : macro @:pos(e.pos) throw new hxparse.Parser.Unexpected(peek());
+	}
+	
+	static function makeInner(c:ParserCase) {
+		var last = c.tail.pop();
+		if (last == null) {
+			return {values:[c.head], guard:null, expr: c.expr};
 		}
-		var plast = makePattern(last, map(true, c.expr), getDef(pat) );
-		while (pl.length > 0) {
-			var pat = pl.pop();
-			plast = makePattern(pat, plast, getDef(pat));
-		}
-		return plast;
+		var elast = makePattern(last, c.expr, unexpected);
+		while (c.tail.length > 0)
+			elast = makePattern(c.tail.pop(), elast, unexpected);
+		return {values: [c.head], guard: null, expr: elast};
 	}
 	
 	static function makePattern(pat:Expr, e:Expr, def:Expr) {
