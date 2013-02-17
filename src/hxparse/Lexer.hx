@@ -9,7 +9,7 @@ typedef Pos = {
 }
 
 class Lexer {
-	public var current:String;
+	public var current(default, null):String;
 	var buffer:haxe.io.Bytes;
 	var bsize:Int;
 	var bin:Int;
@@ -21,7 +21,7 @@ class Lexer {
 	var line:Int;
 	var pos:Int;
 	var carriage:Bool;
-	public var eof(default, null):Bool;
+	var eof(default, null):Bool;
 	
 	public function new(input:haxe.io.Input, sourceName:String = "<null>") {
 		var bufsize = 4096;
