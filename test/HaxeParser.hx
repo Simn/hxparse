@@ -67,17 +67,29 @@ class HaxeParser extends hxparse.Parser<Token> {
 		return a;
 	}
 
-	function psep<T>(t:TokenDef, f:Void->T) {
-		var v = f();
-		var ret = [];
-		while (v != noMatch) {
-			ret.push(v);
-			if (peek().tok != t)
-				break;
-			junk();
-			v = f();
+	function psep<T>(sep:TokenDef, f:Void->T):Array<T> {
+		//var v = f();
+		//var ret = [];
+		//while (v != noMatch) {
+			//ret.push(v);
+			//if (peek().tok != t)
+				//break;
+			//junk();
+			//v = f();
+		//}
+		//return ret;
+		return switch stream {
+			case [v = f()]:
+				function loop() {
+					return switch stream {
+						case [{tok:sep2} && sep2 == sep, v = f(), l = loop()]: aadd(l,v);
+						case _: [];
+					}
+				}
+				aadd(loop(),v);
+			case _:
+				[];
 		}
-		return ret;
 	}
 
 	function popt<T>(f:Void->T) {
@@ -293,7 +305,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 		}
 	}
 
-	function parseClassFieldResume(tdecl) {
+	function parseClassFieldResume(tdecl):Array<Field> {
 		return plist(parseClassField);
 	}
 
@@ -528,7 +540,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 		}
 	}
 
-	function parseClassField() {
+	function parseClassField():Field {
 		doc = null;
 		return switch stream {
 			case [meta = parseMeta(), al = parseCfRights(true,[]), doc = getDoc()]:
@@ -583,7 +595,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 						}
 					case _:
 						if (al.length == 0)
-							return noMatch;
+							throw new hxparse.Parser.NoMatch();
 						else
 							serror();
 				}
@@ -698,8 +710,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 		try {
 			var e = parseBlockElt();
 			return block(aadd(acc,e));
-		// TODO
-		} catch(e:hxparse.Parser.ParserState) {
+		} catch(e:hxparse.Parser.NoMatch) {
 			acc.reverse();
 			return acc;
 		}

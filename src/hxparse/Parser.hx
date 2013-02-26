@@ -9,18 +9,16 @@ class Unexpected<Token> {
 	}
 }
 
-enum ParserState {
-	NoMatch;
+class NoMatch {
+	public function new() { }
 }
 
 @:autoBuild(hxparse.ParserBuilder.build())
 class Parser<Token> {
 	var stream:LexerStream<Token>;
-	var noMatch:Dynamic;
-	
+
 	public function new(stream:LexerStream<Token>) {
 		this.stream = stream;
-		noMatch = NoMatch;
 	}
 	
 	inline function junk() {

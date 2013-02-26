@@ -24,7 +24,9 @@ class ParserBuilder {
 			switch(field.kind) {
 				case FFun(fun) if (fun.expr != null):
 					fun.expr = map(true, fun.expr);
-					//trace(field.name + " " +fun.expr.toString());
+					//if (StringTools.startsWith(field.name, "parseClassField"))
+					//if (field.name == "parseClassField")
+					trace(field.name + " " +fun.expr.toString());
 				case _:
 			}
 		}
@@ -46,7 +48,8 @@ class ParserBuilder {
 			case ESwitch({expr: EConst(CIdent("stream"))}, cl, edef):
 				if (edef != null)
 					cl.push({values: [macro _], expr: edef, guard: null});
-				transformCases(needVal, cl);
+				var ce = transformCases(needVal, cl);
+				macro (function() return $ce)();
 			case EBlock([]):
 				e;
 			case EBlock(el):
@@ -63,7 +66,7 @@ class ParserBuilder {
 	static function transformCases(needVal:Bool, cl:Array<Case>) {
 		var groups = [];
 		var group = [];
-		var def = macro noMatch;
+		var def = noMatch;
 		for (c in cl) {
 			switch(c.values) {
 				case [{expr:EArrayDecl(el)}]:
@@ -97,6 +100,7 @@ class ParserBuilder {
 	}
 	
 	static var unexpected = macro throw new hxparse.Parser.Unexpected(peek());
+	static var noMatch = macro throw new hxparse.Parser.NoMatch();
 		
 	static function makeCase(g:CaseGroup, def:Expr) {
 		return switch(g) {
@@ -132,11 +136,12 @@ class ParserBuilder {
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
 				macro @:pos(pat.pos) {
-					var $s = $e2;
-					if ($i{s} != noMatch) {
-						$e;
-					} else
-						$def;
+					var $s = try {
+						$e2;
+					} catch (e:hxparse.Parser.NoMatch) {
+						return $def;
+					}
+					$e;
 				}
 			case EBinop(OpBoolAnd, e1, e2):
 				macro @:pos(pat.pos) switch peek() {
