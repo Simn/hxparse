@@ -55,6 +55,13 @@ class HaxeParser extends hxparse.Parser<Token> {
 		return loop(0);
 	}
 
+	static function isDollarIdent(e:Expr) {
+		return switch (e.expr) {
+			case EConst(CIdent(n)) if (n.charCodeAt(0) == "$".code): true;
+			case _: false;
+		}
+	}
+
 	inline function aadd<T>(a:Array<T>, t:T) {
 		a.push(t);
 		return a;
@@ -556,7 +563,6 @@ class HaxeParser extends hxparse.Parser<Token> {
 								}
 						}
 					case [{tok:Kwd(Function), pos:p1}, name = parseFunName(), pl = parseConstraintParams(), {tok:POpen}, al = psep(Comma, parseFunParam), {tok:PClose}, t = parseTypeOpt()]:
-						trace(peek());
 						var e = switch stream {
 							case [e = toplevelExpr(), _ = semicolon()]:
 								{ expr: e, pos: e.pos };
@@ -813,8 +819,15 @@ class HaxeParser extends hxparse.Parser<Token> {
 		return expr();
 	}
 
-	function exprNext(e) {
-		return e;
+	function exprNext(e1:Expr):Expr {
+		return switch stream {
+			case [{tok:BrOpen, pos:p1} && isDollarIdent(e1), eparam = expr(), {tok:BrClose,pos:p2}]:
+				switch (e1.expr) {
+					case EConst(CIdent(n)): exprNext({expr: EMeta({name:n, params:[], pos:e1.pos},eparam), pos:punion(p1,p2)});
+					case _: throw false;
+				}
+			case _: e1;
+		}
 	}
 
 	function secureExpr() {
