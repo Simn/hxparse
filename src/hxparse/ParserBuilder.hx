@@ -24,9 +24,6 @@ class ParserBuilder {
 			switch(field.kind) {
 				case FFun(fun) if (fun.expr != null):
 					fun.expr = map(true, fun.expr);
-					//if (StringTools.startsWith(field.name, "parseClassField"))
-					//if (field.name == "parseClassField")
-					trace(field.name + " " +fun.expr.toString());
 				case _:
 			}
 		}
@@ -131,8 +128,6 @@ class ParserBuilder {
 	}
 	
 	static function makePattern(pat:Expr, e:Expr, def:Expr) {
-		function setPos(e) return { expr: e.expr, pos: pat.pos }.map(setPos);
-		var def = setPos(def);
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
 				macro @:pos(pat.pos) {
