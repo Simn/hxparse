@@ -746,17 +746,78 @@ class HaxeParser extends hxparse.Parser<Token> {
 		}
 	}
 
+	function expr():Expr {
+		return switch stream {
+			// META
+			case [{tok:BrOpen, pos:p1}, b = block1(), {tok:BrClose, pos:p2}]:
+				var e = { expr: b, pos: punion(p1, p2)};
+				switch(b) {
+					case EObjectDecl(_): exprNext(e);
+					case _: e;
+				}
+			// MACRO
+			case [{tok:Kwd(Var), pos: p1}, v = parseVarDecl()]: { expr: EVars([v]), pos: p1};
+			case [{tok:Const(c), pos:p}]: exprNext({expr:EConst(c), pos:p});
+			case [{tok:Kwd(This), pos:p}]: exprNext({expr: EConst(CIdent("this")), pos:p});
+			case [{tok:Kwd(True), pos:p}]: exprNext({expr: EConst(CIdent("true")), pos:p});
+			case [{tok:Kwd(False), pos:p}]: exprNext({expr: EConst(CIdent("false")), pos:p});
+			case [{tok:Kwd(Null), pos:p}]: exprNext({expr: EConst(CIdent("null")), pos:p});
+			case [{tok:Kwd(Cast), pos:p1}]:
+				switch stream {
+					case [{tok:POpen}, e = expr()]:
+						switch stream {
+							case [{tok:Comma}, t = parseComplexType(), {tok:PClose, pos:p2}]: exprNext({expr:ECast(e,t), pos: punion(p1,p2)});
+							case [{tok:PClose, pos:p2}]: exprNext({expr:ECast(e,null),pos:punion(p1,p2)});
+							case _: serror();
+						}
+					case [e = secureExpr()]: exprNext({expr:ECast(e,null), pos:punion(p1, e.pos)});
+				}
+			case [{tok:Kwd(Throw), pos:p}, e = expr()]: { expr: EThrow(e), pos: p};
+			case [{tok:Kwd(New), pos:p1}, t = parseTypePath(), {tok:POpen, pos:_}]:
+				switch stream {
+					case [al = psep(Comma, expr), {tok:PClose, pos:p2}]: exprNext({expr:ENew(t,al), pos:punion(p1, p2)});
+					case _: serror();
+				}
+			case [{tok:POpen, pos: p1}, e = expr(), {tok:PClose, pos:p2}]: exprNext({expr:EParenthesis(e), pos:punion(p1, p2)});
+			case [{tok:BkOpen, pos:p1}, l = parseArrayDecl(), {tok:BkClose, pos:p2}]: exprNext({expr: EArrayDecl(l), pos:punion(p1,p2)});
+			// CLOSURE
+			// UNOP
+			// BINOP
+			case [{tok:Kwd(For), pos:p}, {tok:POpen}, it = expr(), {tok:PClose}]:
+				var e = secureExpr();
+				{ expr: EFor(it,e), pos:punion(p, e.pos)};
+			case [{tok:Kwd(If), pos:p}, {tok:POpen}, cond = expr(), {tok:PClose}, e1 = expr()]:
+				var e2 = switch stream {
+					case [{tok:Kwd(Else)}, e2 = expr()]: e2;
+					case _:
+						// TODO: npeek
+						null;
+				}
+				{ expr: EIf(cond,e1,e2), pos:punion(p, e2 == null ? e1.pos : e2.pos)};
+			case [{tok:Kwd(Return), pos:p}, e = popt(expr)]: { expr: EReturn(e), pos: e == null ? p : punion(p,e.pos)};
+			case [{tok:Kwd(Break), pos:p}]: { expr: EBreak, pos: p };
+			case [{tok:Kwd(Continue), pos:p}]: { expr: EContinue, pos: p};
+			case [{tok:Kwd(While), pos:p1}, {tok:POpen}, cond = expr(), {tok:PClose}]:
+				var e = secureExpr();
+				{ expr: EWhile(cond, e, true), pos: punion(p1, e.pos)};
+			case [{tok:Kwd(Do), pos:p1}, e = expr(), {tok:Kwd(While)}, {tok:POpen}, cond = expr(), {tok:PClose}]: { expr: EWhile(cond,e,false), pos:punion(p1, e.pos)};
+			// SWITCH
+			// TRY
+			// INTERVAL
+			case [{tok:Kwd(Untyped), pos:p1}, e = expr()]: { expr: EUntyped(e), pos:punion(p1,e.pos)};
+			case [{tok:Dollar(v), pos:p}]: exprNext({expr:EConst(CIdent("$" + v)), pos:p});
+		}
+	}
+
 	function toplevelExpr():Expr {
 		return expr();
 	}
 
-	function expr():Expr {
-		return switch stream {
-			case [{tok:Const(c), pos:p}]: {expr:EConst(c), pos:p};
-		}
-	}
-
 	function exprNext(e) {
 		return e;
+	}
+
+	function secureExpr() {
+		return expr();
 	}
 }
