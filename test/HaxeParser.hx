@@ -5,6 +5,8 @@ using Lambda;
 
 enum ErrorMsg {
 	MissingSemicolon;
+	MissingType;
+	DuplicateDefault;
 	Custom(s:String);
 }
 
@@ -55,7 +57,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 		return loop(0);
 	}
 
-	static function isPostFix(e,u) {
+	static function isPostfix(e,u) {
 		switch (u) {
 			case OpIncrement | OpDecrement:
 				switch(e.expr) {
@@ -65,6 +67,13 @@ class HaxeParser extends hxparse.Parser<Token> {
 						false;
 				}
 			case OpNot | OpNeg | OpNegBits: false;
+		}
+	}
+
+	static function isPrefix(u) {
+		return switch(u) {
+			case OpIncrement | OpDecrement: true;
+			case OpNot | OpNeg | OpNegBits: true;
 		}
 	}
 
@@ -118,22 +127,35 @@ class HaxeParser extends hxparse.Parser<Token> {
 				{ expr: EBinop(op,e,e2), pos:punion(e.pos, e2.pos)};
 		}
 	}
-	inline function aadd<T>(a:Array<T>, t:T) {
+
+	static function makeUnop(op,e:Expr,p1) {
+		return switch(e.expr) {
+			case EBinop(bop,e,e2):
+				{ expr: EBinop(bop, makeUnop(op,e,p1), e2), pos: punion(p1,e.pos)};
+			case ETernary(e1,e2,e3):
+				{ expr: ETernary(makeUnop(op,e1,p1), e2, e3), pos:punion(p1,e.pos)};
+			case _:
+				{ expr: EUnop(op,false,e), pos:punion(p1,e.pos)};
+		}
+	}
+
+	static function makeMeta(name, params, e:Expr, p1) {
+		return switch(e.expr) {
+			case EBinop(bop,e,e2):
+				{ expr: EBinop(bop, makeMeta(name,params,e,p1), e2), pos: punion(p1,e.pos)};
+			case ETernary(e1,e2,e3):
+				{ expr: ETernary(makeMeta(name,params,e1,p1), e2, e3), pos:punion(p1,e.pos)};
+			case _:
+				{ expr: EMeta({name:name, params:params, pos:p1}, e), pos: punion(p1, e.pos) };
+		}
+	}
+
+	static inline function aadd<T>(a:Array<T>, t:T) {
 		a.push(t);
 		return a;
 	}
 
 	function psep<T>(sep:TokenDef, f:Void->T):Array<T> {
-		//var v = f();
-		//var ret = [];
-		//while (v != noMatch) {
-			//ret.push(v);
-			//if (peek().tok != t)
-				//break;
-			//junk();
-			//v = f();
-		//}
-		//return ret;
 		return switch stream {
 			case [v = f()]:
 				function loop() {
@@ -821,7 +843,8 @@ class HaxeParser extends hxparse.Parser<Token> {
 
 	function expr():Expr {
 		return switch stream {
-			// META
+			case [meta = parseMetaEntry()]:
+				makeMeta(meta.name, meta.params, secureExpr(), meta.pos);
 			case [{tok:BrOpen, pos:p1}, b = block1(), {tok:BrClose, pos:p2}]:
 				var e = { expr: b, pos: punion(p1, p2)};
 				switch(b) {
@@ -853,9 +876,31 @@ class HaxeParser extends hxparse.Parser<Token> {
 				}
 			case [{tok:POpen, pos: p1}, e = expr(), {tok:PClose, pos:p2}]: exprNext({expr:EParenthesis(e), pos:punion(p1, p2)});
 			case [{tok:BkOpen, pos:p1}, l = parseArrayDecl(), {tok:BkClose, pos:p2}]: exprNext({expr: EArrayDecl(l), pos:punion(p1,p2)});
-			// CLOSURE
-			// UNOP
-			// BINOP
+			case [inl = inlineFunction(), name = popt(dollarIdent), pl = parseConstraintParams(), {tok:POpen}, al = psep(Comma,parseFunParam), {tok:PClose}, t = parseTypeOpt()]:
+				function make(e) {
+					var f = {
+						params: pl,
+						ret: t,
+						args: al,
+						expr: e
+					};
+					return { expr: EFunction(name == null ? null : inl.isInline ? "inline_" + name.name : name.name, f), pos: punion(inl.pos, e.pos)};
+				}
+				exprNext(make(secureExpr()));
+			case [{tok:Unop(op), pos:p1}, e = expr()]: makeUnop(op,e,p1);
+			case [{tok:Binop(OpSub), pos:p1}, e = expr()]:
+				function neg(s:String) {
+					return s.charCodeAt(0) == '-'.code
+						? s.substr(1)
+						: s;
+				}
+				switch (makeUnop(OpNeg,e,p1)) {
+					case {expr:EUnop(OpNeg,false,{expr:EConst(CInt(i))}), pos:p}:
+						{expr:EConst(CInt(neg(i))), pos:p};
+					case {expr:EUnop(OpNeg,false,{expr:EConst(CFloat(j))}), pos:p}:
+						{expr:EConst(CFloat(neg(j))), pos:p};
+					case _: e;
+				}
 			case [{tok:Kwd(For), pos:p}, {tok:POpen}, it = expr(), {tok:PClose}]:
 				var e = secureExpr();
 				{ expr: EFor(it,e), pos:punion(p, e.pos)};
@@ -874,9 +919,11 @@ class HaxeParser extends hxparse.Parser<Token> {
 				var e = secureExpr();
 				{ expr: EWhile(cond, e, true), pos: punion(p1, e.pos)};
 			case [{tok:Kwd(Do), pos:p1}, e = expr(), {tok:Kwd(While)}, {tok:POpen}, cond = expr(), {tok:PClose}]: { expr: EWhile(cond,e,false), pos:punion(p1, e.pos)};
-			// SWITCH
-			// TRY
-			// INTERVAL
+			case [{tok:Kwd(Switch), pos:p1}, e = expr(), {tok:BrOpen}, cases = parseSwitchCases(e,[]), {tok:BrClose, pos:p2}]:
+				{ expr: ESwitch(e,cases.cases,cases.def), pos:punion(p1,p2)};
+			case [{tok:Kwd(Try), pos:p1}, e = expr(), cl = plist(parseCatch.bind(e))]:
+				{ expr: ETry(e,cl), pos:p1};
+			case [{tok:IntInterval(i), pos:p1}, e2 = expr()]: makeBinop(OpInterval,{expr:EConst(CInt(i)), pos:p1}, e2);
 			case [{tok:Kwd(Untyped), pos:p1}, e = expr()]: { expr: EUntyped(e), pos:punion(p1,e.pos)};
 			case [{tok:Dollar(v), pos:p}]: exprNext({expr:EConst(CIdent("$" + v)), pos:p});
 		}
@@ -909,7 +956,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 							case _: serror();
 						}
 				}
-			case [{tok:POpen, pos:p1}]:
+			case [{tok:POpen, pos:_}]:
 				switch stream {
 					case [params = parseCallParams(e1), {tok:PClose, pos:p2}]:
 						exprNext({expr:ECall(e1,params),pos:punion(e1.pos,p2)});
@@ -939,13 +986,62 @@ class HaxeParser extends hxparse.Parser<Token> {
 				}
 			case [{tok:Binop(op)}, e2 = expr()]:
 				makeBinop(op,e1,e2);
-			case [{tok:Unop(op), pos:p} && isPostFix(e1,op)]:
+			case [{tok:Unop(op), pos:p} && isPostfix(e1,op)]:
 				exprNext({expr:EUnop(op,true,e1), pos:punion(e1.pos, p)});
 			case [{tok:Question}, e2 = expr(), {tok:DblDot}, e3 = expr()]:
 				{ expr: ETernary(e1,e2,e3), pos: punion(e1.pos, e3.pos)};
 			case [{tok:Kwd(In)}, e2 = expr()]:
 				{expr:EIn(e1,e2), pos:punion(e1.pos, e2.pos)};
 			case _: e1;
+		}
+	}
+
+	function parseGuard() {
+		return switch stream {
+			case [{tok:Kwd(If)}, {tok:POpen}, e = expr(), {tok:PClose}]:
+				e;
+		}
+	}
+
+	function parseSwitchCases(eswitch,cases) {
+		return switch stream {
+			case [{tok:Kwd(Default), pos:p1}, {tok:DblDot}]:
+				var b = block([]);
+				var b = { expr: b.length == 0 ? null : EBlock(b), pos:p1 };
+				var cl = parseSwitchCases(eswitch,cases);
+				if (cl.def != null) {
+					throw {
+						msg: DuplicateDefault,
+						pos: p1
+					}
+				}
+				{ cases: cl.cases, def: b }
+			case [{tok:Kwd(Case), pos:p1}, el = psep(Comma,expr), eg = popt(parseGuard), {tok:DblDot}]:
+				var b = block([]);
+				var b = { expr: b.length == 0 ? null : EBlock(b), pos: p1};
+				parseSwitchCases(eswitch, aadd(cases,{values:el,guard:eg,expr:b}));
+			case _:
+				cases.reverse();
+				{ cases: cases, def: null};
+		}
+	}
+
+	function parseCatch(etry) {
+		return switch stream {
+			case [{tok:Kwd(Catch), pos:p}, {tok:POpen}, id = ident(), ]:
+				switch stream {
+					case [{tok:DblDot}, t = parseComplexType(), {tok:PClose}]:
+						{
+							name: id.name,
+							type: t,
+							expr: secureExpr()
+						}
+					case _:
+						throw {
+							msg: MissingType,
+							pos: p
+						}
+				}
 		}
 	}
 
