@@ -4,10 +4,17 @@ import hxparse.Lexer;
 
 class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 
+	static inline function mkPos(p:Pos) {
+		return {
+			file: p.psource,
+			min: p.pmin,
+			max: p.pmax
+		};
+	}
 	static function mk(lexer:Lexer, td) {
 		return {
 			tok: td,
-			pos: lexer.curPos()
+			pos: mkPos(lexer.curPos())
 		}
 	}
 	

@@ -72,27 +72,51 @@ enum TokenDef {
 
 typedef Token = {
 	tok: TokenDef,
-	pos: hxparse.Lexer.Pos
+	pos: Position
+}
+
+typedef EnumConstructor = {
+	name : String,
+	doc: String,
+	meta: Metadata,
+	args: Array<{ name: String, opt: Bool, type: ComplexType}>,
+	pos: Position,
+	params: Array<TypeParamDecl>,
+	type: Null<ComplexType>
 }
 
 typedef Definition<A,B> = {
 	name : String,
 	doc: String,
 	params: Array<TypeParamDecl>,
-	meta: Array<Metadata>,
+	meta: Metadata,
 	flags: Array<A>,
 	data: B
 }
 
 enum TypeDef {
-	EImport(sl:Array<String>);
 	EClass(d:Definition<ClassFlag, Array<Field>>);
+	EEnum(d:Definition<EnumFlag, Array<EnumConstructor>>);
+	EImport(sl:Array<{pack:String, pos:Position}>, mode:ImportMode);
+	ETypedef(d:Definition<EnumFlag, ComplexType>);
+	EUsing(path:TypePath);
 }
 
 enum ClassFlag {
 	HInterface;
 	HExtern;
 	HPrivate;
-	HExtends;
-	HImplements;
+	HExtends(t:TypePath);
+	HImplements(t:TypePath);
+}
+
+enum EnumFlag {
+	EPrivate;
+	EExtern;
+}
+
+enum ImportMode {
+	INormal;
+	IAsName(s:String);
+	IAll;
 }
