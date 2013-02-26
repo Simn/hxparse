@@ -19,9 +19,12 @@ class HaxeParser extends hxparse.Parser<Token> {
 
 	var doResume = false;
 	var doc:String;
-
+	var inMacro:Bool;
+	
 	public function new(input:haxe.io.Input, sourceName:String) {
 		super(new hxparse.LexerStream(new HaxeLexer(input, sourceName), HaxeLexer.tok));
+		inMacro = false;
+		doc = "";
 	}
 
 	public function parse() {
@@ -215,7 +218,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 	function anyEnumIdent() {
 		return switch stream {
 			case [i = ident()]: i;
-			//case [{tok:Kwd(k), pos:p}
+			case [{tok:Kwd(k), pos:p}]: {name:k.getName().toLowerCase(), pos:p};
 		}
 	}
 
@@ -323,7 +326,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 			var t = popt(typeName);
 			return t == null ? "" : t;
 		}
-		switch stream {
+		return switch stream {
 			case [flags = parseClassFlags(), doc = getDoc(), name = optName(), tl = parseConstraintParams(), hl = psep(Comma,parseClassHerit), {tok: BrOpen}, fl = parseClassFields(false,flags.pos)]:
 				{ decl: EClass({
 					name: name,
@@ -418,7 +421,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 	function metaName() {
 		return switch stream {
 			case [{tok:Const(CIdent(i)), pos:p}]: {name: i, pos: p};
-			//case [{tok:Kwd(k), pos:p}]: {name: }
+			case [{tok:Kwd(k), pos:p}]: {name: k.getName().toLowerCase(), pos:p};
 			case [{tok:DblDot}]:
 				switch stream {
 					case [{tok:Const(CIdent(i)), pos:p}]: {name: i, pos: p};
@@ -841,6 +844,37 @@ class HaxeParser extends hxparse.Parser<Token> {
 		}
 	}
 
+	function reify(inMacro) {
+		// TODO
+		return {
+			toExpr: function(e) return null,
+			toType: function(t,p) return null,
+			toTypeDef: function(t) return null,
+		}
+	}
+	
+	function reifyExpr(e) {
+		var toExpr = reify(inMacro).toExpr;
+		var e = toExpr(e);
+		return { expr: ECheckType(e, TPath( {pack:["haxe","macro"], name:"Expr", sub:null, params: []})), pos: e.pos};
+	}
+
+	function parseMacroExpr(p) {
+		return switch stream {
+			case [{tok:DblDot}, t = parseComplexType()]:
+				var toType = reify(inMacro).toType;
+				var t = toType(t,p);
+				{ expr: ECheckType(t, TPath( {pack:["haxe","macro"], name:"Expr", sub:"ComplexType", params: []})), pos: p};
+			case [{tok:Kwd(Var), pos:p1}, vl = psep(Comma, parseVarDecl)]:
+				reifyExpr({expr:EVars(vl), pos:p1});
+			case [{tok:BkOpen}, d = parseClass([],[],false)]:
+				var toType = reify(inMacro).toTypeDef;
+				{ expr: ECheckType(toType(d), TPath( {pack:["haxe","macro"], name:"Expr", sub:"TypeDefinition", params: []})), pos: p};
+			case [e = secureExpr()]:
+				reifyExpr(e);
+		}
+	}
+
 	function expr():Expr {
 		return switch stream {
 			case [meta = parseMetaEntry()]:
@@ -851,7 +885,8 @@ class HaxeParser extends hxparse.Parser<Token> {
 					case EObjectDecl(_): exprNext(e);
 					case _: e;
 				}
-			// MACRO
+			case [{tok:Kwd(Macro), pos:p}]:
+				parseMacroExpr(p);
 			case [{tok:Kwd(Var), pos: p1}, v = parseVarDecl()]: { expr: EVars([v]), pos: p1};
 			case [{tok:Const(c), pos:p}]: exprNext({expr:EConst(c), pos:p});
 			case [{tok:Kwd(This), pos:p}]: exprNext({expr: EConst(CIdent("this")), pos:p});
