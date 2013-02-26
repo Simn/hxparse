@@ -24,6 +24,7 @@ class ParserBuilder {
 			switch(field.kind) {
 				case FFun(fun) if (fun.expr != null):
 					fun.expr = map(true, fun.expr);
+					//trace(field.name + " " +fun.expr.toString());
 				case _:
 			}
 		}
@@ -52,7 +53,7 @@ class ParserBuilder {
 				var elast = el.pop();
 				var el = el.map(map.bind(false));
 				el.push(map(true, elast));
-				macro $b{el};
+				macro @:pos(e.pos) $b{el};
 			case _: e.map(map.bind(true));
 		}
 	}
@@ -62,12 +63,12 @@ class ParserBuilder {
 	static function transformCases(needVal:Bool, cl:Array<Case>) {
 		var groups = [];
 		var group = [];
-		var def = macro null;
+		var def = macro hxparse.Parser.noMatch();
 		for (c in cl) {
 			switch(c.values) {
 				case [{expr:EArrayDecl(el)}]:
 					var head = el.shift();
-					var chead = {head:head, tail: el, expr:map(true,c.expr)};
+					var chead = {head:head, tail: el, expr:c.expr == null ? macro null : map(true,c.expr)};
 					switch(head.expr) {
 						case EBinop(_):
 							if (group.length > 0) groups.push(Simple(group));
@@ -77,7 +78,7 @@ class ParserBuilder {
 							group.push(chead);
 					}
 				case [{expr:EConst(CIdent("_"))}]:
-					def = map(true, c.expr);
+					def = c.expr == null ? macro null : map(true, c.expr);
 				case [e]:
 					Context.error("Expected [ patterns ]", e.pos);
 				case _:
@@ -102,7 +103,7 @@ class ParserBuilder {
 			case Simple(group):
 				var cl = group.map(makeInner);
 				cl.iter(function(c) {
-					c.expr = macro { junk(); ${c.expr}; };
+					c.expr = macro @:pos(c.expr.pos) { junk(); ${c.expr}; };
 				});
 				{
 					pos: def.pos,
@@ -126,11 +127,13 @@ class ParserBuilder {
 	}
 	
 	static function makePattern(pat:Expr, e:Expr, def:Expr) {
+		function setPos(e) return { expr: e.expr, pos: pat.pos }.map(setPos);
+		var def = setPos(def);
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
 				macro @:pos(pat.pos) {
 					var $s = $e2;
-					if ($i{s} != null) {
+					if ($i{s} != hxparse.Parser.noMatch()) {
 						$e;
 					} else
 						$def;
