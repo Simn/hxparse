@@ -34,7 +34,12 @@ class HaxeParser extends hxparse.Parser<Token> {
 		};
 	}
 
-	static inline function isLowerIdent(s:String) {
+	static function quoteIdent(s) {
+		// TODO
+		return s;
+	}
+
+	static function isLowerIdent(s:String) {
 		function loop(p) {
 			var c = s.charCodeAt(p);
 			return if (c >= 'a'.code && c <= 'z'.code)
@@ -515,7 +520,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 			case [name = ident(), {tok:DblDot}, t = parseComplexType()]: { name: name.name, opt: false, type: t };
 		}
 	}
-	
+
 	function parseClassField() {
 		doc = null;
 		return switch stream {
@@ -663,18 +668,95 @@ class HaxeParser extends hxparse.Parser<Token> {
 			case [{tok:Kwd(Implements)}, t = parseTypePath()]: HImplements(t);
 		}
 	}
-	
+
+	function block1() {
+		return switch stream {
+			case [{tok:Const(CIdent(name)), pos:p}]: block2(name, CIdent(name), p);
+			case [{tok:Const(CString(name)), pos:p}]: block2(quoteIdent(name), CString(name), p);
+			case [b = block([])]: EBlock(b);
+		}
+	}
+
+	function block2(name, ident, p) {
+		return switch stream {
+			case [{tok:DblDot}, e = expr(), l = parseObjDecl()]: EObjectDecl(aadd(l, {field:name, expr:e}));
+			case _:
+				var e = exprNext({expr:EConst(ident), pos: p});
+				var _ = semicolon();
+				var b = block([e]);
+				EBlock(b);
+		}
+	}
+
+	function block(acc:Array<Expr>) {
+		try {
+			var e = parseBlockElt();
+			return block(aadd(acc,e));
+		// TODO
+		} catch(e:hxparse.Parser.ParserState) {
+			acc.reverse();
+			return acc;
+		}
+	}
+
+	function parseBlockElt() {
+		return switch stream {
+			case [{tok:Kwd(Var), pos:p1}, vl = psep(Comma, parseVarDecl), p2 = semicolon()]: { expr: EVars(vl), pos:punion(p1,p2)};
+			case [e = expr(), _ = semicolon()]: e;
+		}
+	}
+
+	function parseObjDecl() {
+		return switch stream {
+			case [{tok:Comma}]:
+				switch stream {
+					case [id = ident(), {tok:DblDot}, e = expr(), l = parseObjDecl()]: aadd(l, {field:id.name, expr: e});
+					case [{tok:Const(CString(name))}, {tok:DblDot}, e = expr(), l = parseObjDecl()]: aadd(l,{field:quoteIdent(name), expr: e});
+					case _: [];
+				}
+			case _: [];
+		}
+	}
+
+	function parseArrayDecl() {
+		return switch stream {
+			case [e = expr()]:
+				switch stream {
+					case [{tok:Comma}, l = parseArrayDecl()]: aadd(l, e);
+					case _: [e];
+				}
+			case _: [];
+		}
+	}
+
+	function parseVarDecl() {
+		return switch stream {
+			case [id = dollarIdent(), t = parseTypeOpt()]:
+				switch stream {
+					case [{tok:Binop(OpAssign)}, e = expr()]: { name: id.name, type: t, expr: e};
+					case _: { name: id.name, type:t, expr: null};
+				}
+		}
+	}
+
+	function inlineFunction() {
+		return switch stream {
+			case [{tok:Kwd(Inline)}, {tok:Kwd(Function), pos:p1}]: { isInline: true, pos: p1};
+			case [{tok:Kwd(Function), pos: p1}]: { isInline: false, pos: p1};
+		}
+	}
+
 	function toplevelExpr():Expr {
 		return expr();
 	}
-	
+
 	function expr():Expr {
 		return switch stream {
 			case [{tok:Const(c), pos:p}]: {expr:EConst(c), pos:p};
 		}
 	}
-	
-	function parseArrayDecl() {
-		return null;
+
+	function exprNext(e) {
+		return e;
 	}
 }
