@@ -4,6 +4,7 @@ import hxparse.Types;
 class LexerStream<T> {
 
 	public var ruleset:Ruleset<T>;
+	public var last(default, null):T;
 	var lexer:Lexer;
 	var lookahead:T;
 	
@@ -20,6 +21,7 @@ class LexerStream<T> {
 	}
 	
 	public inline function junk():Void {
+		last = lookahead;
 		lookahead = null;
 	}
 }

@@ -43,7 +43,7 @@
     <!-- example: <hidden path="..." /> -->
   </hiddenPaths>
   <!-- Executed before build -->
-  <preBuildCommand>haxe build.hxml</preBuildCommand>
+  <preBuildCommand>"$(CompilerPath)/haxe" build.hxml</preBuildCommand>
   <!-- Executed after build -->
   <postBuildCommand alwaysRun="False" />
   <!-- Other project options -->
