@@ -9,11 +9,15 @@ class Unexpected<Token> {
 	}
 }
 
+enum ParserState {
+	NoMatch;
+}
+
 @:autoBuild(hxparse.ParserBuilder.build())
 class Parser<Token> {
-	var stream:Stream<Token>;
+	var stream:LexerStream<Token>;
 	
-	public function new(stream:Stream<Token>) {
+	public function new(stream:LexerStream<Token>) {
 		this.stream = stream;
 	}
 	
@@ -28,5 +32,14 @@ class Parser<Token> {
 	inline function unexpected(t:Token):Dynamic {
 		throw new Unexpected(t);
 		return null;
+	}
+	
+	inline function serror():Dynamic {
+		throw new Unexpected(peek());
+		return null;
+	}
+	
+	static inline function noMatch():Dynamic {
+		return NoMatch;
 	}
 }
