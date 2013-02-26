@@ -54,6 +54,7 @@ enum TokenDef {
 	Binop(op:haxe.macro.Expr.Binop);
 	Comment(s:String);
 	CommentLine(s:String);
+	IntInterval(s:String);
 	Semicolon;
 	Dot;
 	DblDot;
