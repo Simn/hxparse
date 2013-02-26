@@ -16,9 +16,11 @@ enum ParserState {
 @:autoBuild(hxparse.ParserBuilder.build())
 class Parser<Token> {
 	var stream:LexerStream<Token>;
+	var noMatch:Dynamic;
 	
 	public function new(stream:LexerStream<Token>) {
 		this.stream = stream;
+		noMatch = NoMatch;
 	}
 	
 	inline function junk() {
@@ -37,9 +39,5 @@ class Parser<Token> {
 	inline function serror():Dynamic {
 		throw new Unexpected(peek());
 		return null;
-	}
-	
-	static inline function noMatch():Dynamic {
-		return NoMatch;
 	}
 }

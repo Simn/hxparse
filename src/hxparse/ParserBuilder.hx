@@ -63,7 +63,7 @@ class ParserBuilder {
 	static function transformCases(needVal:Bool, cl:Array<Case>) {
 		var groups = [];
 		var group = [];
-		var def = macro hxparse.Parser.noMatch();
+		var def = macro noMatch;
 		for (c in cl) {
 			switch(c.values) {
 				case [{expr:EArrayDecl(el)}]:
@@ -133,7 +133,7 @@ class ParserBuilder {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
 				macro @:pos(pat.pos) {
 					var $s = $e2;
-					if ($i{s} != hxparse.Parser.noMatch()) {
+					if ($i{s} != noMatch) {
 						$e;
 					} else
 						$def;
