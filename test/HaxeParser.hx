@@ -55,6 +55,44 @@ class HaxeParser extends hxparse.Parser<Token> {
 		return loop(0);
 	}
 
+	static function isPostFix(e,u) {
+		switch (u) {
+			case OpIncrement | OpDecrement:
+				switch(e.expr) {
+					case EConst(_) | EField(_) | EArray(_):
+						true;
+					case _:
+						false;
+				}
+			case OpNot | OpNeg | OpNegBits: false;
+		}
+	}
+
+	static function precedence(op) {
+		var left = true;
+		var right = false;
+		return switch(op) {
+			case OpMod : {p: 0, left: left};
+			case OpMult | OpDiv : {p: 0, left: left};
+			case OpAdd | OpSub : {p: 0, left: left};
+			case OpShl | OpShr | OpUShr : {p: 0, left: left};
+			case OpOr | OpAnd | OpXor : {p: 0, left: left};
+			case OpEq | OpNotEq | OpGt | OpLt | OpGte | OpLte : {p: 0, left: left};
+			case OpInterval : {p: 0, left: left};
+			case OpBoolAnd : {p: 0, left: left};
+			case OpBoolOr : {p: 0, left: left};
+			case OpArrow : {p: 0, left: left};
+			case OpAssign | OpAssignOp(_) : {p:10, left:right};
+		}
+	}
+
+	static function isNotAssign(op) {
+		return switch(op) {
+			case OpAssign | OpAssignOp(_): false;
+			case _: true;
+		}
+	}
+
 	static function isDollarIdent(e:Expr) {
 		return switch (e.expr) {
 			case EConst(CIdent(n)) if (n.charCodeAt(0) == "$".code): true;
@@ -62,6 +100,24 @@ class HaxeParser extends hxparse.Parser<Token> {
 		}
 	}
 
+	static function swap(op1,op2) {
+		var i1 = precedence(op1);
+		var i2 = precedence(op2);
+		i1.left && i1.p < i2.p;
+	}
+
+	static function makeBinop(op,e:Expr,e2:Expr) {
+		return switch (e2.expr) {
+			case EBinop(_op,_e,_e2) if (swap(op,_op)):
+				var _e = makeBinop(op,e,_e);
+				{expr: EBinop(_op,_e,_e2), pos:punion(_e.pos,_e2.pos)};
+			case ETernary(e1,e2,e3) if (isNotAssign(op)):
+				var e = makeBinop(op,e,e1);
+				{expr:ETernary(e,e2,e3), pos:punion(e.pos, e3.pos)};
+			case _:
+				{ expr: EBinop(op,e,e2), pos:punion(e.pos, e2.pos)};
+		}
+	}
 	inline function aadd<T>(a:Array<T>, t:T) {
 		a.push(t);
 		return a;
@@ -834,11 +890,79 @@ class HaxeParser extends hxparse.Parser<Token> {
 		return switch stream {
 			case [{tok:BrOpen, pos:p1} && isDollarIdent(e1), eparam = expr(), {tok:BrClose,pos:p2}]:
 				switch (e1.expr) {
-					case EConst(CIdent(n)): exprNext({expr: EMeta({name:n, params:[], pos:e1.pos},eparam), pos:punion(p1,p2)});
+					case EConst(CIdent(n)):
+						exprNext({expr: EMeta({name:n, params:[], pos:e1.pos},eparam), pos:punion(p1,p2)});
 					case _: throw false;
 				}
+			case [{tok:Dot, pos:p}]:
+				switch stream {
+					case [{tok:Kwd(Macro), pos:p2} && p.max == p2.min]:
+						exprNext({expr:EField(e1,"macro"), pos:punion(e1.pos,p2)});
+					case [{tok:Const(CIdent(f)), pos:p2} && p.max == p2.min]:
+						exprNext({expr:EField(e1,f), pos:punion(e1.pos,p2)});
+					case [{tok:Dollar(v), pos:p2}]:
+						exprNext({expr:EField(e1, "$" + v), pos:punion(e1.pos, p2)});
+					case _:
+						switch(e1) {
+							case {expr: EConst(CInt(v)), pos:p2} if (p2.max == p.min):
+								exprNext({expr:EConst(CFloat(v + ".")), pos:punion(p,p2)});
+							case _: serror();
+						}
+				}
+			case [{tok:POpen, pos:p1}]:
+				switch stream {
+					case [params = parseCallParams(e1), {tok:PClose, pos:p2}]:
+						exprNext({expr:ECall(e1,params),pos:punion(e1.pos,p2)});
+					case _: serror();
+				}
+			case [{tok:BkOpen}, e2 = expr(), {tok:BkClose, pos:p2}]:
+				exprNext({expr:EArray(e1,e2), pos:punion(e1.pos,p2)});
+			case [{tok:Binop(OpGt)}]:
+				switch stream {
+					case [{tok:Binop(OpGt)}]:
+						switch stream {
+							case [{tok:Binop(OpGt)}]:
+								switch stream {
+									case [{tok:Binop(OpAssign)}, e2 = expr()]:
+										makeBinop(OpAssignOp(OpUShr),e1,e2);
+									case [e2 = secureExpr()]: makeBinop(OpUShr,e1,e2);
+								}
+							case [{tok:Binop(OpAssign)}, e2 = expr()]:
+								makeBinop(OpAssignOp(OpShr),e1,e2);
+							case [e2 = secureExpr()]:
+								makeBinop(OpShr,e1,e2);
+						}
+					case [{tok:Binop(OpAssign)}]:
+						makeBinop(OpGte,e1,secureExpr());
+					case [e2 = secureExpr()]:
+						makeBinop(OpGt,e1,e2);
+				}
+			case [{tok:Binop(op)}, e2 = expr()]:
+				makeBinop(op,e1,e2);
+			case [{tok:Unop(op), pos:p} && isPostFix(e1,op)]:
+				exprNext({expr:EUnop(op,true,e1), pos:punion(e1.pos, p)});
+			case [{tok:Question}, e2 = expr(), {tok:DblDot}, e3 = expr()]:
+				{ expr: ETernary(e1,e2,e3), pos: punion(e1.pos, e3.pos)};
+			case [{tok:Kwd(In)}, e2 = expr()]:
+				{expr:EIn(e1,e2), pos:punion(e1.pos, e2.pos)};
 			case _: e1;
 		}
+	}
+
+	function parseCallParams(ec) {
+		var e = switch stream {
+			case [e = expr()]: e;
+			case _: null;
+		}
+		function loop(acc:Array<Expr>) {
+			return switch stream {
+				case [{tok:Comma}, e = expr()]: loop(aadd(acc,e));
+				case _:
+					acc.reverse();
+					acc;
+			}
+		}
+		return e == null ? [] : loop([e]);
 	}
 
 	function secureExpr() {
