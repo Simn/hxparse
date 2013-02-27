@@ -15,6 +15,11 @@ typedef Error = {
 	pos: hxparse.Lexer.Pos
 }
 
+enum Either<S,T> {
+	Left(v:S);
+	Right(v:T);
+}
+
 class HaxeParser extends hxparse.Parser<Token> {
 
 	var doResume = false;
@@ -173,14 +178,14 @@ class HaxeParser extends hxparse.Parser<Token> {
 		}
 	}
 
-	function popt<T>(f:Void->T) {
+	function popt<T>(f:Void->T):Null<T> {
 		return switch stream {
 			case [v = f()]: v;
 			case _: null;
 		}
 	}
 
-	function plist<T>(f:Void->T) {
+	function plist<T>(f:Void->T):Array<T> {
 		return switch stream {
 			case [v = f(), l = plist(f)]: aadd(l,v);
 			case _: [];

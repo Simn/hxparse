@@ -1,11 +1,20 @@
 class Test {
 	
 	static function main() {
-		var path = Sys.args();
-		if (path.length != 1)
-			throw "Usage: neko hxparse.n [path to .hx file]";
-		var i = sys.io.File.read(path[0], true);
-		var parser = new HaxeParser(i, path[0]);
-		parser.parse();
+		var testPath = "http://localhost:2000/TestClass.hx";
+		var http = new haxe.Http(testPath);
+		http.onData = function(data) {
+			function run() {
+				var i = new haxe.io.StringInput(data);
+				var parser = new HaxeParser(i, testPath.substr(testPath.lastIndexOf("/")));
+				parser.parse();
+			}
+			haxe.Timer.measure(run);
+		}
+		http.onError = function(e) {
+			trace(e);
+		}
+		http.request(false);
 	}
+	
 }

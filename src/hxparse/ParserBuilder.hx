@@ -46,7 +46,7 @@ class ParserBuilder {
 				if (edef != null)
 					cl.push({values: [macro _], expr: edef, guard: null});
 				var ce = transformCases(needVal, cl);
-				macro (function() return $ce)();
+				ce;
 			case EBlock([]):
 				e;
 			case EBlock(el):
@@ -130,13 +130,29 @@ class ParserBuilder {
 	static function makePattern(pat:Expr, e:Expr, def:Expr) {
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
-				macro @:pos(pat.pos) {
-					var $s = try {
-						$e2;
-					} catch (e:hxparse.Parser.NoMatch) {
-						return $def;
+				if (def == unexpected) {
+					macro {
+						var $s = $e2;
+						$e;
 					}
-					$e;
+				} else {
+					var name = "__result";
+					macro @:pos(pat.pos) {
+						var $name;
+						try {
+							var __temp = $e2;
+							$i{name} = Left(__temp);
+						} catch (_:hxparse.Parser.NoMatch) {
+							var __temp = $def;
+							$i{name} = Right(__temp);
+						}
+						switch($i{name}) {
+							case Left($i{s}):
+								$e;
+							case Right(def):
+								def;
+						}
+					}
 				}
 			case EBinop(OpBoolAnd, e1, e2):
 				macro @:pos(pat.pos) switch peek() {

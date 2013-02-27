@@ -4,4 +4,17 @@
 -dce full
 --each
 
+-D dump=pretty
 -neko bin/hxparse.n
+
+--next
+-swf bin/hxparse.swf
+
+--next
+-js bin/hxparse.js
+
+--next
+-cpp bin/cpp
+
+--next
+-java bin/java
