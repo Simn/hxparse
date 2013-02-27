@@ -136,23 +136,7 @@ class ParserBuilder {
 						$e;
 					}
 				} else {
-					var name = "__result";
-					macro @:pos(pat.pos) {
-						var $name;
-						try {
-							var __temp = $e2;
-							$i{name} = Left(__temp);
-						} catch (_:hxparse.Parser.NoMatch) {
-							var __temp = $def;
-							$i{name} = Right(__temp);
-						}
-						switch($i{name}) {
-							case Left($i{s}):
-								$e;
-							case Right(def):
-								def;
-						}
-					}
+					buildExtractor(pat, e, e2, s, def);
 				}
 			case EBinop(OpBoolAnd, e1, e2):
 				macro @:pos(pat.pos) switch peek() {
@@ -168,6 +152,37 @@ class ParserBuilder {
 						$e;
 					case _: $def;
 				}
+		}
+	}
+	
+	static function buildExtractor(pat, e, e2, s, def) {
+		var name = "__result";
+		return if (Context.defined("flash9")) {
+			macro @:pos(pat.pos) {
+				var $name;
+				try {
+					var __temp = $e2;
+					$i{name} = Left(__temp);
+				} catch (_:hxparse.Parser.NoMatch) {
+					var __temp = $def;
+					$i{name} = Right(__temp);
+				}
+				switch($i{name}) {
+					case Left($i{s}):
+						$e;
+					case Right(def):
+						def;
+				}
+			}
+		} else if (true) {
+			macro @:pos(pat.pos) {
+				try {
+					var $s = $e2;
+					$e;
+				} catch (_:hxparse.Parser.NoMatch) {
+					$def;
+				}
+			}
 		}
 	}
 }
