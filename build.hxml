@@ -11,6 +11,10 @@
 -swf bin/hxparse.swf
 
 --next
+-swf-version 8
+-swf bin/hxparse8.swf
+
+--next
 -js bin/hxparse.js
 
 --next
