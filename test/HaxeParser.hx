@@ -66,7 +66,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 	}
 
 	static function isPostfix(e,u) {
-		switch (u) {
+		return switch (u) {
 			case OpIncrement | OpDecrement:
 				switch(e.expr) {
 					case EConst(_) | EField(_) | EArray(_):
@@ -120,7 +120,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 	static function swap(op1,op2) {
 		var i1 = precedence(op1);
 		var i2 = precedence(op2);
-		i1.left && i1.p < i2.p;
+		return i1.left && i1.p < i2.p;
 	}
 
 	static function makeBinop(op,e:Expr,e2:Expr) {
@@ -269,9 +269,9 @@ class HaxeParser extends hxparse.Parser<Token> {
 	function parseFile() {
 		switch stream {
 			case [{tok:Kwd(Package)}, p = parsePackage(), _ = semicolon(), l = parseTypeDecls(p,[]), {tok:Eof}]:
-				trace(l);
+				//trace(l);
 			case [l = parseTypeDecls([],[]), {tok:Eof}]:
-				trace(l);
+				//trace(l);
 		}
 	}
 
