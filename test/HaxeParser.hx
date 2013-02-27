@@ -33,7 +33,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 	}
 
 	public function parse() {
-		parseFile();
+		return parseFile();
 	}
 
 	static inline function punion(p1:Position, p2:Position) {
@@ -267,11 +267,11 @@ class HaxeParser extends hxparse.Parser<Token> {
 	}
 
 	function parseFile() {
-		switch stream {
+		return switch stream {
 			case [{tok:Kwd(Package)}, p = parsePackage(), _ = semicolon(), l = parseTypeDecls(p,[]), {tok:Eof}]:
-				//trace(l);
+				{ pack: p, decls: l };
 			case [l = parseTypeDecls([],[]), {tok:Eof}]:
-				//trace(l);
+				{ pack: [], decls: l };
 		}
 	}
 

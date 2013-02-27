@@ -7,9 +7,11 @@ class Test {
 			function run() {
 				var i = new haxe.io.StringInput(data);
 				var parser = new HaxeParser(i, testPath.substr(testPath.lastIndexOf("/")));
-				parser.parse();
+				return parser.parse();
 			}
-			haxe.Timer.measure(run);
+			var r = haxe.Timer.measure(run);
+			trace(r.pack);
+			trace(r.decls);
 		}
 		http.onError = function(e) {
 			trace(e);
