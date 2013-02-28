@@ -37,6 +37,7 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 		".[0-9]+" => mk(lexer, Const(CFloat(lexer.current))),
 		"[0-9]+[eE][\\+\\-]?[0-9]+" => mk(lexer,Const(CFloat(lexer.current))),
 		"[0-9]+.[0-9]*[eE][\\+\\-]?[0-9]+" => mk(lexer,Const(CFloat(lexer.current))),
+		"[0-9]+..." => mk(lexer,IntInterval(lexer.current.substr(0,-3))),
 		"//[^\n\r]*" => mk(lexer, CommentLine(lexer.current.substr(2))),
 		"+\\+" => mk(lexer,Unop(OpIncrement)),
 		"--" => mk(lexer,Unop(OpDecrement)),
