@@ -7,6 +7,10 @@ class Unexpected<Token> {
 		this.token = token;
 		this.msg = msg;
 	}
+	
+	public function toString() {
+		return 'Unexpected $token';
+	}
 }
 
 class NoMatch {
@@ -25,7 +29,7 @@ class Parser<Token> {
 		stream.junk();
 	}
 	
-	inline function peek(n = 0):Token {
+	function peek(n = 0):Token {
 		return stream.peek(n);
 	}
 	
