@@ -35,6 +35,18 @@ class HaxeParser extends hxparse.Parser<Token> {
 	public function parse() {
 		return parseFile();
 	}
+	
+	override function peek(n = 0) {
+		return if (n == 0)
+			switch(super.peek(0)) {
+				case {tok:CommentLine(_) | Sharp("end" | "else" | "elseif" | "if" | "error" | "line")}:
+					junk();
+					peek(0);
+				case t: t;
+			}
+		else
+			super.peek(n);
+	}
 
 	static inline function punion(p1:Position, p2:Position) {
 		return {
