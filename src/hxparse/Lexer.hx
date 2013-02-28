@@ -35,7 +35,7 @@ class Lexer {
 		cpos = bufsize;
 		this.input = input;
 		source = sourceName;
-		line = 0;
+		line = 1;
 		pos = 0;
 		eof = false;
 	}
@@ -146,7 +146,7 @@ class Lexer {
 			process(false);
 		}
 		if (state == null || state.finals.length == 0)
-			throw "Unexpected " + String.fromCharCode(char());
+			throw "Unexpected " + String.fromCharCode(char()) + curPos();
 		// TODO: [0] doesn't seem right
 		return ruleset.functions[state.finals[0].pid](this);
 	}
