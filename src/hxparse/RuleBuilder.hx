@@ -41,6 +41,16 @@ class RuleBuilderImpl {
 	}
 	
 	#if macro
+	
+	static function makeRule(fields:Map<String,Expr>, rule:Expr):String {
+		return switch(rule.expr) {
+			case EConst(CString(s)): s;
+			case EConst(CIdent(i)): makeRule(fields, fields.get(i));
+			case EBinop(OpAdd,e1,e2): makeRule(fields, e1) + makeRule(fields, e2);
+			case _: Context.error("Invalid rule", rule.pos);
+		}
+	}
+	
 	static function transformRule(field:Field, e:Expr, fields:Map<String,Expr>) {
 		var el = switch(e.expr) {
 			case EArrayDecl(el): el;
@@ -50,7 +60,7 @@ class RuleBuilderImpl {
 			function loop(e:Expr) {
 				return switch(e.expr) {
 					case EBinop(OpArrow, rule, e):
-						macro @:pos(e.pos) $rule => function(lexer:hxparse.Lexer) return $e;
+						macro @:pos(e.pos) $v{makeRule(fields, rule)} => function(lexer:hxparse.Lexer) return $e;
 					case EConst(CIdent(s)) if (fields.exists(s)):
 						loop(fields.get(s));
 					case _:
