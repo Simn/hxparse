@@ -961,8 +961,13 @@ class HaxeParser extends hxparse.Parser<Token> {
 				var e2 = switch stream {
 					case [{tok:Kwd(Else)}, e2 = expr()]: e2;
 					case _:
-						// TODO: npeek
-						null;
+						switch [peek(0),peek(1)] {
+							case [{tok:Semicolon}, {tok:Kwd(Else)}]:
+								junk();
+								junk();
+								secureExpr();
+							case _: null;
+						}
 				}
 				{ expr: EIf(cond,e1,e2), pos:punion(p, e2 == null ? e1.pos : e2.pos)};
 			case [{tok:Kwd(Return), pos:p}, e = popt(expr)]: { expr: EReturn(e), pos: e == null ? p : punion(p,e.pos)};
