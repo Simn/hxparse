@@ -25,8 +25,8 @@ class Parser<Token> {
 		stream.junk();
 	}
 	
-	inline function peek():Token {
-		return stream.peek();
+	inline function peek(n = 0):Token {
+		return stream.peek(n);
 	}
 	
 	inline function unexpected(t:Token):Dynamic {
