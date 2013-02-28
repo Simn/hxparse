@@ -3,15 +3,15 @@ import haxe.macro.Expr;
 import haxe.ds.Option;
 using Lambda;
 
-enum ErrorMsg {
+enum ParserErrorMsg {
 	MissingSemicolon;
 	MissingType;
 	DuplicateDefault;
 	Custom(s:String);
 }
 
-typedef Error = {
-	msg: ErrorMsg,
+typedef ParserError = {
+	msg: ParserErrorMsg,
 	pos: hxparse.Lexer.Pos
 }
 

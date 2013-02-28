@@ -2,6 +2,20 @@ import Data;
 import haxe.macro.Expr;
 import hxparse.Lexer;
 
+enum LexerErrorMsg {
+	UnterminatedString;
+	UnclosedComment;
+}
+
+class LexerError {
+	public var msg:LexerErrorMsg;
+	public var pos:Position;
+	public function new(msg, pos) {
+		this.msg = msg;
+		this.pos = pos;
+	}
+}
+
 class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 
 	static inline function mkPos(p:Pos) {
@@ -11,6 +25,7 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 			max: p.pmax
 		};
 	}
+	
 	static function mk(lexer:Lexer, td) {
 		return {
 			tok: td,
@@ -86,19 +101,19 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 		'"' => {
 			buf = new StringBuf();
 			var pmin = lexer.curPos();
-			var pmax = lexer.token(string);
+			var pmax = try lexer.token(string) catch (e:haxe.io.Eof) throw new LexerError(UnterminatedString, mkPos(pmin));
 			mk(lexer, Const(CString(buf.toString())));
 		},
 		"'" => {
 			buf = new StringBuf();
 			var pmin = lexer.curPos();
-			var pmax = lexer.token(string2);
+			var pmax = try lexer.token(string2) catch (e:haxe.io.Eof) throw new LexerError(UnterminatedString, mkPos(pmin));
 			mk(lexer, Const(CString(buf.toString())));
 		},
 		'/\\*' => {
 			buf = new StringBuf();
 			var pmin = lexer.curPos();
-			var pmax = lexer.token(comment);
+			var pmax = try lexer.token(comment) catch (e:haxe.io.Eof) throw new LexerError(UnclosedComment, mkPos(pmin));
 			mk(lexer, Comment(buf.toString()));
 		},
 		"#" + ident => mk(lexer, Sharp(lexer.current.substr(1))),
