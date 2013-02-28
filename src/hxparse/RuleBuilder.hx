@@ -60,7 +60,7 @@ class RuleBuilderImpl {
 			function loop(e:Expr) {
 				return switch(e.expr) {
 					case EBinop(OpArrow, rule, e):
-						macro @:pos(e.pos) $v{makeRule(fields, rule)} => function(lexer:hxparse.Lexer) return $e;
+						macro @:pos(e.pos) {rule:$v{makeRule(fields, rule)}, func:function(lexer:hxparse.Lexer) return $e};
 					case EConst(CIdent(s)) if (fields.exists(s)):
 						loop(fields.get(s));
 					case _:

@@ -151,16 +151,17 @@ class Lexer {
 		return ruleset.functions[state.finals[0].pid](this);
 	}
 	
-	static public function build<Token>(rules:Map<String,Lexer->Token>) {
+	static public function build<Token>(rules:Array<{rule:String,func:Lexer->Token}>) {
 		var cases = [];
 		var functions = [];
 		var eofFunction = null;
-		for (k in rules.keys()) {
-			if (k == "") {
-				eofFunction = rules.get(k);
+		rules.reverse();
+		for (rule in rules) {
+			if (rule.rule == "") {
+				eofFunction = rule.func;
 			} else {
-				cases.push(LexEngine.parse(k));
-				functions.push(rules.get(k));
+				cases.push(LexEngine.parse(rule.rule));
+				functions.push(rule.func);
 			}
 		}
 		return new Ruleset(new LexEngine(cases),functions,eofFunction);
