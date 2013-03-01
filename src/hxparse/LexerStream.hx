@@ -28,6 +28,10 @@ class LexerStream<T> {
 		offset++;
 	}
 	
+	public function curPos() {
+		return lexer.curPos();
+	}
+	
 	function get_last() {
 		return cache[offset - 1];
 	}

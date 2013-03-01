@@ -15,11 +15,6 @@ typedef ParserError = {
 	pos: hxparse.Lexer.Pos
 }
 
-enum Either<S,T> {
-	Left(v:S);
-	Right(v:T);
-}
-
 class HaxeParser extends hxparse.Parser<Token> {
 
 	var doResume = false;

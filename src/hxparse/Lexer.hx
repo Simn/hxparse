@@ -8,6 +8,20 @@ typedef Pos = {
 	var pmax : Int;
 }
 
+class UnexpectedChar {
+	public var char:String;
+	public var pos:Pos;
+	
+	public function new(char, pos) {
+		this.char = char;
+		this.pos = pos;
+	}
+	
+	public function toString() {
+		return '$pos: Unexpected $char';
+	}
+}
+
 class Lexer {
 	public var current(default, null):String;
 	var buffer:haxe.io.Bytes;
@@ -146,7 +160,7 @@ class Lexer {
 			process(false);
 		}
 		if (state == null || state.finals.length == 0)
-			throw "Unexpected " + String.fromCharCode(char()) + curPos();
+			throw new UnexpectedChar(String.fromCharCode(char()), curPos());
 		// TODO: [0] doesn't seem right
 		return ruleset.functions[state.finals[0].pid](this);
 	}

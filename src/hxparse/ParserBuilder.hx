@@ -96,7 +96,7 @@ class ParserBuilder {
 		return elast;
 	}
 	
-	static var unexpected = macro throw new hxparse.Parser.Unexpected(peek());
+	static var unexpected = macro serror();
 	static var noMatch = macro throw new hxparse.Parser.NoMatch();
 		
 	static function makeCase(g:CaseGroup, def:Expr) {
@@ -145,6 +145,8 @@ class ParserBuilder {
 						$e;
 					case _: $def;
 				}
+			case EBinop(OpBoolOr, e1, e2):
+				makePattern(e1, e, macro throw stream.curPos() + ": " +$e2);
 			case _:
 				macro @:pos(pat.pos) switch peek() {
 					case $pat:

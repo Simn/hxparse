@@ -2,15 +2,20 @@ package hxparse;
 
 class Unexpected<Token> {
 	public var token:Token;
-	public var msg:String;
-	public function new(token:Token, ?msg:String) {
+	public var pos:hxparse.Lexer.Pos;
+	public function new(token:Token, pos) {
 		this.token = token;
-		this.msg = msg;
+		this.pos = pos;
 	}
 	
 	public function toString() {
-		return 'Unexpected $token';
+		return 'Unexpected $token at $pos';
 	}
+}
+
+enum Either<S,T> {
+	Left(v:S);
+	Right(v:T);
 }
 
 class NoMatch {
@@ -34,12 +39,12 @@ class Parser<Token> {
 	}
 	
 	inline function unexpected(t:Token):Dynamic {
-		throw new Unexpected(t);
+		throw new Unexpected(t, stream.curPos());
 		return null;
 	}
 	
 	inline function serror():Dynamic {
-		throw new Unexpected(peek());
+		throw new Unexpected(peek(), stream.curPos());
 		return null;
 	}
 }
