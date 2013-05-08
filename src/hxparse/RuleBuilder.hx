@@ -20,10 +20,10 @@ class RuleBuilderImpl {
 		for (field in fields) {
 			if (field.access.exists(function(a) return a == AStatic))
 				switch(field.kind) {
-					case FVar(_, e) if (e != null):
+					case FVar(t, e) if (e != null):
 						switch(e.expr) {
 							case EMeta({name: ":rule"}, e):
-								delays.push(transformRule.bind(field, e, fieldExprs));
+								delays.push(transformRule.bind(field, e, t, fieldExprs));
 							case EMeta({name: ":mapping"}, e):
 								delays.push(transformMapping.bind(field,e));
 							case _:
@@ -51,7 +51,7 @@ class RuleBuilderImpl {
 		}
 	}
 	
-	static function transformRule(field:Field, e:Expr, fields:Map<String,Expr>) {
+	static function transformRule(field:Field, e:Expr, t:ComplexType, fields:Map<String,Expr>) {
 		var el = switch(e.expr) {
 			case EArrayDecl(el): el;
 			case _: Context.error("Expected pattern => function map declaration", e.pos);
@@ -60,7 +60,7 @@ class RuleBuilderImpl {
 			function loop(e:Expr) {
 				return switch(e.expr) {
 					case EBinop(OpArrow, rule, e):
-						macro @:pos(e.pos) {rule:$v{makeRule(fields, rule)}, func:function(lexer:hxparse.Lexer) return $e};
+						macro @:pos(e.pos) {rule:$v{makeRule(fields, rule)}, func:function(lexer:hxparse.Lexer):$t return $e};
 					case EConst(CIdent(s)) if (fields.exists(s)):
 						loop(fields.get(s));
 					case _:
