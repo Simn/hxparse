@@ -17,6 +17,8 @@ class Test {
 			trace(e);
 		}
 		http.request(false);
+		
+		var parser = new PrintfParser(new haxe.io.StringInput("Valu$$e: $-050.2f kg"));
+		trace(parser.parse());
 	}
-	
 }
