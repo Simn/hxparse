@@ -164,15 +164,15 @@ class ParserBuilder {
 				var $name;
 				try {
 					var __temp = $e2;
-					$i{name} = Left(__temp);
+					$i{name} = hxparse.Parser.Either.Left(__temp);
 				} catch (_:hxparse.Parser.NoMatch) {
 					var __temp = $def;
-					$i{name} = Right(__temp);
+					$i{name} = hxparse.Parser.Either.Right(__temp);
 				}
 				switch($i{name}) {
-					case Left($i{s}):
+					case hxparse.Parser.Either.Left($i{s}):
 						$e;
-					case Right(def):
+					case hxparse.Parser.Either.Right(def):
 						def;
 				}
 			}
