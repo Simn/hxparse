@@ -54,22 +54,18 @@ class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 }
 
 class PrintfParser extends hxparse.Parser<PToken> {
-	
-	var lexerStream:hxparse.LexerStream<PToken>;
-	
 	public function new(input:haxe.io.Input) {
-		lexerStream = new hxparse.LexerStream(new PrintfLexer(input), PrintfLexer.tok);
-		super(lexerStream);
+		super(new hxparse.LexerStream(new PrintfLexer(input), PrintfLexer.tok));
 	}
 	
 	public function parse() {
 		var v:Fmt<Dynamic,Dynamic> = switch stream {
 			case [Literal(s)]: Lit(s);
 			case [Placeholder]:
-				var current = lexerStream.ruleset;
-				lexerStream.ruleset = PrintfLexer.placeholder;
+				var current = stream.ruleset;
+				stream.ruleset = PrintfLexer.placeholder;
 				var r = parsePlaceholder();
-				lexerStream.ruleset = current;
+				stream.ruleset = current;
 				r;
 			case [Eof]: null;
 		}
