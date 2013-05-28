@@ -176,7 +176,7 @@ class ParserBuilder {
 						def;
 				}
 			}
-		} else if (true) {
+		} else {
 			macro @:pos(pat.pos) {
 				try {
 					var $s = $e2;
