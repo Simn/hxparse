@@ -6,13 +6,13 @@ import haxe.macro.Expr;
 using haxe.macro.Tools;
 using Lambda;
 
-typedef ParserCase = {
+private typedef ParserCase = {
 	expr: Expr,
 	head: Expr,
 	tail: Array<Expr>
 }
 
-enum CaseGroup {
+private enum CaseGroup {
 	Simple(group:Array<ParserCase>);
 	Complex(c:ParserCase);
 }

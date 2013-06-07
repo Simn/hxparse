@@ -22,10 +22,22 @@ class NoMatch {
 	public function new() { }
 }
 
+/**
+	Parser is the base class for all custom parsers.
+	
+	The intended usage is to extend it and utilize its method as an API where
+	required.
+	
+	All extending classes are automatically transformed using the
+	`hxparse.ParserBuilder.build` macro.
+ */
 @:autoBuild(hxparse.ParserBuilder.build())
 class Parser<Token> {
 	var stream:LexerStream<Token>;
 
+	/**
+		Creates a new Parser instance over `LexerStream` `stream.
+	**/
 	public function new(stream:LexerStream<Token>) {
 		this.stream = stream;
 	}

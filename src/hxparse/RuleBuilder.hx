@@ -70,7 +70,7 @@ class RuleBuilderImpl {
 			return loop(e);
 		});
 		var e = macro $a{el};
-		var e = macro hxparse.Lexer.build($e);
+		var e = macro hxparse.Lexer.buildRuleset($e);
 		field.kind = FVar(null, e);
 		return e;
 	}

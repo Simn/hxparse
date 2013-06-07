@@ -45,12 +45,12 @@ class State {
 }
 
 class Ruleset<Token> {
-	public var engine:LexEngine<Pattern>;
+	public var state:State;
 	public var functions:Array<Lexer->Token>;
 	public var eofFunction:Lexer->Token;
 	
-	public function new(engine,functions,eofFunction) {
-		this.engine = engine;
+	public function new(state,functions,eofFunction) {
+		this.state = state;
 		this.functions = functions;
 		this.eofFunction = eofFunction;
 	}
