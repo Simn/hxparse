@@ -82,7 +82,7 @@ class LexEngine<T> {
 		for( f in finals )
 			for( n in nodes )
 				if( n == f ) {
-					s.finals.push(n);
+					s.finals.push(n.pid);
 					break;
 				}
 		return s;
@@ -369,5 +369,39 @@ class LexEngine<T> {
 			}
 		}
 		return r;
+	}
+}
+
+private enum Pattern {
+	Empty;
+	Match( c : Charset );
+	Star( p : Pattern );
+	Plus( p : Pattern );
+	Next( p1 : Pattern, p2 : Pattern );
+	Choice( p1 : Pattern, p2 : Pattern );
+}
+
+private typedef Charset = Array<{ min : Int, max : Int }>;
+
+private class Node {
+	public var id : Int;
+	public var pid : Int;
+	public var trans : Array<{ chars : Charset, n : Node }>;
+	public var epsilon : Array<Node>;
+	public function new(id, pid) {
+		this.id = id;
+		this.pid = pid;
+		trans = [];
+		epsilon = [];
+	}
+}
+
+private class Transition {
+	public var chars : Charset;
+	public function new(chars) {
+		this.chars = chars;
+	}
+	public function toString() {
+		return Std.string(chars);
 	}
 }

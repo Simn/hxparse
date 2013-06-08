@@ -197,7 +197,7 @@ class Lexer {
 		if (state == null || state.finals.length == 0)
 			throw new UnexpectedChar(String.fromCharCode(char()), curPos());
 		// TODO: [0] doesn't seem right
-		return ruleset.functions[state.finals[0].pid](this);
+		return ruleset.functions[state.finals[0]](this);
 	}
 	
 	function read() {

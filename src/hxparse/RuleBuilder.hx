@@ -6,6 +6,10 @@ import haxe.macro.Expr;
 using Lambda;
 using haxe.macro.Tools;
 
+/**
+	The RuleBuilder interfaces provides syntactic shortcuts for writing lexer
+	rules.
+**/
 #if !macro
 @:autoBuild(hxparse.RuleBuilderImpl.build())
 #end
