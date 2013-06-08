@@ -5,7 +5,6 @@
 -resource TestClass.hx@HaxeFile
 --each
 
--D dump=pretty
 -neko bin/hxparse.n
 
 --next
