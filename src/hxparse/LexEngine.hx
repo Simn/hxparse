@@ -219,7 +219,7 @@ class LexEngine<T> {
 	public static function parse( pattern : String ) : Pattern {
 		var p = parseInner(pattern);
 		if( p == null ) throw "Invalid pattern '" + pattern + "'";
-		return p;
+		return p.pattern;
 	}
 	
 	inline static function next( a, b ) {
@@ -310,7 +310,7 @@ class LexEngine<T> {
 		return out;
 	}
 
-	static function parseInner( pattern : String, i : Int = 0 ) : Pattern {
+	static function parseInner( pattern : String, i : Int = 0 ) : { pattern: Pattern, pos: Int } {
 		var r = Empty;
 		var l = pattern.length;
 		while( i < l ) {
@@ -323,7 +323,8 @@ class LexEngine<T> {
 			case '?'.code if (r != Empty):
 				r = opt(r);
 			case '|'.code if (r != Empty):
-				return Choice(r, parseInner(pattern, i));
+				var r2 = parseInner(pattern, i);
+				return {pattern: Choice(r, r2.pattern), pos: r2.pos};
 			case '['.code if (pattern.length > 1):
 				var range = 0;
 				var acc = [];
@@ -368,7 +369,7 @@ class LexEngine<T> {
 				r = next(r, Match(single(c)));
 			}
 		}
-		return r;
+		return {pattern:r, pos: i};
 	}
 }
 
