@@ -5,6 +5,9 @@
 -resource TestClass.hx@HaxeFile
 --each
 
+-xml bin/hxparse.xml
+
+--next
 -neko bin/hxparse.n
 
 --next

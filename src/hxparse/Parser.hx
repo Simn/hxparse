@@ -40,7 +40,16 @@ enum Either<S,T> {
 	Right(v:T);
 }
 
+/**
+	A NoMatch exception is thrown if an outer token matching fails.
+	
+	Matching can continue because no tokens have been consumed.
+**/
 class NoMatch {
+	
+	/**
+		Creates a new NoMatch exception.
+	**/
 	public function new() { }
 }
 
@@ -58,7 +67,7 @@ class Parser<Token> {
 	var stream:LexerStream<Token>;
 
 	/**
-		Creates a new Parser instance over `LexerStream` `stream.
+		Creates a new Parser instance over `LexerStream` `stream`.
 	**/
 	public function new(stream:LexerStream<Token>) {
 		this.stream = stream;
