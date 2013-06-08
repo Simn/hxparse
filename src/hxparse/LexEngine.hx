@@ -197,6 +197,8 @@ class LexEngine<T> {
 			n.epsilon.push(initNode(a,final,pid));
 			n.epsilon.push(initNode(b,final,pid));
 			n;
+		case Group(p):
+			initNode(p, final, pid);
 		}
 	}
 	
@@ -325,6 +327,12 @@ class LexEngine<T> {
 			case '|'.code if (r != Empty):
 				var r2 = parseInner(pattern, i);
 				return {pattern: Choice(r, r2.pattern), pos: r2.pos};
+			case '('.code:
+				var r2 = parseInner(pattern, i);
+				i = r2.pos;
+				r = next(r, r2.pattern);
+			case ')'.code:
+				return { pattern: Group(r), pos: i};
 			case '['.code if (pattern.length > 1):
 				var range = 0;
 				var acc = [];
@@ -380,6 +388,7 @@ private enum Pattern {
 	Plus( p : Pattern );
 	Next( p1 : Pattern, p2 : Pattern );
 	Choice( p1 : Pattern, p2 : Pattern );
+	Group ( p : Pattern );
 }
 
 private typedef Charset = Array<{ min : Int, max : Int }>;
