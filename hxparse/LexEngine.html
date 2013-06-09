@@ -5,7 +5,10 @@ directly.</p>
 Multiple patterns can then be passed to the constructor to generate the
 state machine, which is obtainable from the <code>firstState</code> method.</p></div><h2>Class Fields</h2><div class="platform platform-hxparse"><a name="parse"></a><h3><code><span class="keyword">function</span> <a href="#parse">parse</a>(pattern:<span class="type">String</span>):<a class="type" href="/hxparse/hxparse/_LexEngine/Pattern.html">Pattern</a></code></h3><p>Parses the <code>pattern</code> <code><a href="/hxparse/String.html">String</a></code> and returns an instance of <code><a href="/hxparse/Pattern.html">Pattern</a></code>.</p>
 <p>If <code>pattern</code> is not a valid pattern string, an exception of <code><a href="/hxparse/String.html">String</a></code> is
-thrown.</p></div><h2>Instance Fields</h2><div class="platform platform-hxparse"><a name="new"></a><h3><code><span class="keyword">function</span> <a href="#new">new</a>(patterns:<span class="type">Array</span>&lt;<a class="type" href="/hxparse/hxparse/_LexEngine/Pattern.html">Pattern</a>&gt;):<span class="type">Void</span></code></h3><p>Creates a new LexEngine from <code>patterns</code>.</p>
+thrown.</p>
+<p>The following meta characters are supported:</p><ul><li><code>*</code>: zero or more</li><li><code>+</code>: one or more</li><li><code>?</code>: zero or one</li><li><code>|</code>: or</li><li><code>[</code>: begin char range</li><li><code>]</code>: end char range</li><li><code>(</code>: begin group</li><li><code>)</code>: end group</li><li><code>\</code>: escape next char</li></ul>
+<p>These characters must be escaped if they are part of the pattern, by
+using <code>\\*</code>, <code>\\]</code> etc.</p></div><h2>Instance Fields</h2><div class="platform platform-hxparse"><a name="new"></a><h3><code><span class="keyword">function</span> <a href="#new">new</a>(patterns:<span class="type">Array</span>&lt;<a class="type" href="/hxparse/hxparse/_LexEngine/Pattern.html">Pattern</a>&gt;):<span class="type">Void</span></code></h3><p>Creates a new LexEngine from <code>patterns</code>.</p>
 <p>Each LexEngine maintains a state machine, whose initial state can be
 obtained from the <code>firstState</code> method. After this, <code>this</code> LexEngine can
 be discarded.</p>
