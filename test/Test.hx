@@ -13,5 +13,8 @@ class Test {
 		
 		var parser = new PrintfParser(new haxe.io.StringInput("Valu$$e: $-050.2f kg"));
 		trace(parser.parse());
+		
+		var parser = new JSONParser(new haxe.io.StringInput('{ "key": [true, false, null], "other\tkey": [12, 12.1, 0, 0.1, 0.9e, 0.9E, 9E-] }'), "jsontest");
+		trace(parser.parse());
 	}
 }
