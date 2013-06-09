@@ -217,6 +217,21 @@ class LexEngine<T> {
 		
 		If `pattern` is not a valid pattern string, an exception of `String` is
 		thrown.
+		
+		The following meta characters are supported:
+			
+			- `*`: zero or more
+			- `+`: one or more
+			- `?`: zero or one
+			- `|`: or
+			- `[`: begin char range
+			- `]`: end char range
+			- `(`: begin group
+			- `)`: end group
+			- `\`: escape next char
+			
+		These characters must be escaped if they are part of the pattern, by
+		using `\\*`, `\\]` etc.
 	**/
 	public static function parse( pattern : String ) : Pattern {
 		var p = parseInner(pattern);
