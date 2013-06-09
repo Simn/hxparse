@@ -94,8 +94,8 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 		"]" => mk(lexer, BkClose),
 		"{" => mk(lexer, BrOpen),
 		"}" => mk(lexer, BrClose),
-		"(" => mk(lexer, POpen),
-		")" => mk(lexer, PClose),
+		"\\(" => mk(lexer, POpen),
+		"\\)" => mk(lexer, PClose),
 		"?" => mk(lexer, Question),
 		"@" => mk(lexer, At),
 		'"' => {
