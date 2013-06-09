@@ -312,7 +312,7 @@ class LexEngine<T> {
 		return out;
 	}
 
-	static function parseInner( pattern : String, i : Int = 0 ) : { pattern: Pattern, pos: Int } {
+	static function parseInner( pattern : String, i : Int = 0, pDepth : Int = 0 ) : { pattern: Pattern, pos: Int } {
 		var r = Empty;
 		var l = pattern.length;
 		while( i < l ) {
@@ -328,7 +328,7 @@ class LexEngine<T> {
 				var r2 = parseInner(pattern, i);
 				return {pattern: Choice(r, r2.pattern), pos: r2.pos};
 			case '('.code:
-				var r2 = parseInner(pattern, i);
+				var r2 = parseInner(pattern, i, pDepth + 1);
 				i = r2.pos;
 				r = next(r, r2.pattern);
 			case ')'.code:
@@ -377,6 +377,7 @@ class LexEngine<T> {
 				r = next(r, Match(single(c)));
 			}
 		}
+		if (pDepth != 0) throw 'Found unclosed parenthesis while parsing "$pattern"';
 		return {pattern:r, pos: i};
 	}
 }
