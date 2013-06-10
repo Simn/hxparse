@@ -9,7 +9,7 @@ class Test {
 		}
 		var r = haxe.Timer.measure(run);
 		trace(r.pack);
-		trace(r.decls);
+		//trace(r.decls);
 		
 		var parser = new PrintfParser(haxe.byte.ByteData.ofString("Valu$$e: $-050.2f kg"));
 		trace(parser.parse());

@@ -67,7 +67,6 @@ class Lexer {
 		If `input` is null, the result is unspecified.
 	**/
 	public function new(input:haxe.byte.ByteData, sourceName:String = "<null>") {
-		var bufsize = 4096;
 		carriage = false;
 		current = "";
 		this.input = input;
