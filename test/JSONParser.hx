@@ -73,7 +73,7 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 }
 
 class JSONParser extends hxparse.Parser<Token> {
-	public function new(input:haxe.io.Input, sourceName:String) {
+	public function new(input:haxe.byte.ByteData, sourceName:String) {
 		super(new hxparse.LexerStream(new JSONLexer(input, sourceName), JSONLexer.tok));
 	}
 		

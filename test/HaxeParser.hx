@@ -22,7 +22,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 	var doc:String;
 	var inMacro:Bool;
 	
-	public function new(input:haxe.io.Input, sourceName:String) {
+	public function new(input:haxe.byte.ByteData, sourceName:String) {
 		super(new hxparse.LexerStream(new HaxeLexer(input, sourceName), HaxeLexer.tok));
 		inMacro = false;
 		doc = "";

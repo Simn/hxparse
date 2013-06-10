@@ -54,7 +54,7 @@ class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 }
 
 class PrintfParser extends hxparse.Parser<PToken> {
-	public function new(input:haxe.io.Input) {
+	public function new(input:haxe.byte.ByteData) {
 		super(new hxparse.LexerStream(new PrintfLexer(input), PrintfLexer.tok));
 	}
 	
