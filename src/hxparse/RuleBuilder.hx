@@ -90,7 +90,8 @@ class RuleBuilderImpl {
 			case TAnonymous(a):
 				for (f in a.get().fields) {
 					var name = macro $i{f.name};
-					sl.push(macro $v{f.name.toLowerCase().substr(offset)} => $name);
+					var cName = f.name.charAt(offset).toLowerCase() + f.name.substr(offset + 1);
+					sl.push(macro $v{cName} => $name);
 				}
 			case _:
 				Context.error("Invalid mapping type", e.pos);
