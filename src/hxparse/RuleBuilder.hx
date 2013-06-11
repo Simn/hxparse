@@ -89,7 +89,7 @@ class RuleBuilderImpl {
 		switch(t) {
 			case TAnonymous(a):
 				for (f in a.get().fields) {
-					var name = macro $i{f.name};
+					var name = macro @:pos(e.pos) $i{f.name};
 					var cName = f.name.charAt(offset).toLowerCase() + f.name.substr(offset + 1);
 					sl.push(macro $v{cName} => $name);
 				}

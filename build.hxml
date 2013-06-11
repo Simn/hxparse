@@ -8,6 +8,7 @@
 -xml bin/hxparse.xml
 
 --next
+-D dump=pretty
 -neko bin/hxparse.n
 
 --next
