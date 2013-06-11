@@ -33,9 +33,9 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 		}
 	}
 	
-	// @:keywords generates a map with lowercase enum constructor names as keys
+	// @:mapping generates a map with lowercase enum constructor names as keys
 	// and the constructor itself as value
-	static var keywords = @:mapping Data.Keyword;
+	static var keywords = @:mapping(3) Data.Keyword;
 	
 	static var buf = new StringBuf();
 	
