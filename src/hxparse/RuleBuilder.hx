@@ -28,8 +28,12 @@ class RuleBuilderImpl {
 						switch(e.expr) {
 							case EMeta({name: ":rule"}, e):
 								delays.push(transformRule.bind(field, e, t, fieldExprs));
-							case EMeta({name: ":mapping"}, e):
-								delays.push(transformMapping.bind(field,e));
+							case EMeta({name: ":mapping", params: args}, e):
+								var offset = switch(args) {
+									case [{expr: EConst(CInt(i))}]: Std.parseInt(i);
+									case _: 0;
+								}
+								delays.push(transformMapping.bind(field, e, offset));
 							case _:
 								fieldExprs.set(field.name, e);
 						}
@@ -79,14 +83,14 @@ class RuleBuilderImpl {
 		return e;
 	}
 	
-	static function transformMapping(field:Field, e:Expr) {
+	static function transformMapping(field:Field, e:Expr, offset:Int) {
 		var t = Context.typeof(e).follow();
 		var sl = [];
 		switch(t) {
 			case TAnonymous(a):
 				for (f in a.get().fields) {
 					var name = macro $i{f.name};
-					sl.push(macro $v{f.name.toLowerCase()} => $name);
+					sl.push(macro $v{f.name.toLowerCase().substr(offset)} => $name);
 				}
 			case _:
 				Context.error("Invalid mapping type", e.pos);
