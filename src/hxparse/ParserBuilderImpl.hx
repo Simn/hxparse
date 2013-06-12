@@ -158,8 +158,8 @@ class ParserBuilderImpl {
 	}
 	
 	static function buildExtractor(pat, e, e2, s, def) {
-		var name = "__result";
 		return if (Context.defined("flash9")) {
+			var name = "__result";
 			macro @:pos(pat.pos) {
 				var $name;
 				try {

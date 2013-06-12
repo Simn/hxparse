@@ -569,7 +569,6 @@ class HaxeParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder 
 
 	function parseTypeAnonymous(opt):Array<Field> {
 		return switch stream {
-			case [{tok:Question} && !opt]: parseTypeAnonymous(true);
 			case [id = ident(), {tok:DblDot}, t = parseComplexType()]:
 				function next(p2,acc) {
 					var t = !opt ? t : switch(t) {
@@ -595,6 +594,7 @@ class HaxeParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder 
 						}
 					case _: unexpected();
 				}
+			case [{tok:Question} && !opt]: parseTypeAnonymous(true);
 		}
 	}
 
@@ -1001,20 +1001,14 @@ class HaxeParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder 
 
 	function exprNext(e1:Expr):Expr {
 		return switch stream {
-			case [{tok:BrOpen, pos:p1} && isDollarIdent(e1), eparam = expr(), {tok:BrClose,pos:p2}]:
-				switch (e1.expr) {
-					case EConst(CIdent(n)):
-						exprNext({expr: EMeta({name:n, params:[], pos:e1.pos},eparam), pos:punion(p1,p2)});
-					case _: throw false;
-				}
 			case [{tok:Dot, pos:p}]:
 				switch stream {
-					case [{tok:Kwd(KwdMacro), pos:p2} && p.max == p2.min]:
-						exprNext({expr:EField(e1,"macro"), pos:punion(e1.pos,p2)});
-					case [{tok:Const(CIdent(f)), pos:p2} && p.max == p2.min]:
-						exprNext({expr:EField(e1,f), pos:punion(e1.pos,p2)});
 					case [{tok:Dollar(v), pos:p2}]:
 						exprNext({expr:EField(e1, "$" + v), pos:punion(e1.pos, p2)});
+					case [{tok:Const(CIdent(f)), pos:p2} && p.max == p2.min]:
+						exprNext({expr:EField(e1,f), pos:punion(e1.pos,p2)});
+					case [{tok:Kwd(KwdMacro), pos:p2} && p.max == p2.min]:
+						exprNext({expr:EField(e1,"macro"), pos:punion(e1.pos,p2)});
 					case _:
 						switch(e1) {
 							case {expr: EConst(CInt(v)), pos:p2} if (p2.max == p.min):
@@ -1052,12 +1046,18 @@ class HaxeParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder 
 				}
 			case [{tok:Binop(op)}, e2 = expr()]:
 				makeBinop(op,e1,e2);
-			case [{tok:Unop(op), pos:p} && isPostfix(e1,op)]:
-				exprNext({expr:EUnop(op,true,e1), pos:punion(e1.pos, p)});
 			case [{tok:Question}, e2 = expr(), {tok:DblDot}, e3 = expr()]:
 				{ expr: ETernary(e1,e2,e3), pos: punion(e1.pos, e3.pos)};
 			case [{tok:Kwd(KwdIn)}, e2 = expr()]:
 				{expr:EIn(e1,e2), pos:punion(e1.pos, e2.pos)};
+			case [{tok:Unop(op), pos:p} && isPostfix(e1,op)]:
+				exprNext({expr:EUnop(op,true,e1), pos:punion(e1.pos, p)});
+			case [{tok:BrOpen, pos:p1} && isDollarIdent(e1), eparam = expr(), {tok:BrClose,pos:p2}]:
+				switch (e1.expr) {
+					case EConst(CIdent(n)):
+						exprNext({expr: EMeta({name:n, params:[], pos:e1.pos},eparam), pos:punion(p1,p2)});
+					case _: throw false;
+				}
 			case _: e1;
 		}
 	}
