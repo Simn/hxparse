@@ -172,18 +172,18 @@ class HaxeParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder 
 	}
 
 	function psep<T>(sep:TokenDef, f:Void->T):Array<T> {
-		return switch stream {
-			case [v = f()]:
-				function loop() {
-					return switch stream {
-						case [{tok:sep2} && sep2 == sep, v = f(), l = loop()]: aadd(l,v);
-						case _: [];
-					}
+		var acc = [];
+		while(true) {
+			try {
+				acc.push(f());
+				switch stream {
+					case [{tok: sep2} && sep2 == sep]:
 				}
-				aadd(loop(),v);
-			case _:
-				[];
+			} catch(e:hxparse.Parser.NoMatch<Dynamic>) {
+				break;
+			}
 		}
+		return acc;
 	}
 
 	function popt<T>(f:Void->T):Null<T> {
@@ -719,13 +719,13 @@ class HaxeParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder 
 	
 	function parseCfRights(allowStatic,l) {
 		return switch stream {
-			case [{tok:Kwd(KwdStatic)} && allowStatic, l = parseCfRights(false, aadd(l, AStatic))]: l;
 			case [{tok:Kwd(KwdMacro)}, l = parseCfRights(allowStatic, aadd(l, AMacro))]: l;
 			case [{tok:Kwd(KwdPublic)}, l = parseCfRights(allowStatic, aadd(l, APublic))]: l;
 			case [{tok:Kwd(KwdPrivate)}, l = parseCfRights(allowStatic, aadd(l, APrivate))]: l;
 			case [{tok:Kwd(KwdOverride)}, l = parseCfRights(false, aadd(l, AOverride))]: l;
 			case [{tok:Kwd(KwdDynamic)}, l = parseCfRights(allowStatic, aadd(l, ADynamic))]: l;
 			case [{tok:Kwd(KwdInline)}, l = parseCfRights(allowStatic, aadd(l, AInline))]: l;
+			case [{tok:Kwd(KwdStatic)} && allowStatic, l = parseCfRights(false, aadd(l, AStatic))]: l;
 			case _: l;
 		}
 	}
