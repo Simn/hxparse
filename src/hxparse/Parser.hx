@@ -152,7 +152,6 @@ class Parser<Token> {
 	}
 	
 	inline function unexpected():Dynamic {
-		throw new Unexpected(peek(0), stream.curPos());
-		return null;
+		return throw new Unexpected(peek(0), stream.curPos());
 	}
 }
