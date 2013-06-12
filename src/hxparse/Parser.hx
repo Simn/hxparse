@@ -127,7 +127,7 @@ class Parser<Token> {
 		Returns the `n`th token without consuming it.
 	**/
 	@:doc
-	function peek(n = 0):Token {
+	function peek(n:Int):Token {
 		var index = offset + n;
 		while (cache[index] == null) {
 			cache.push(stream.token(ruleset));
@@ -147,7 +147,7 @@ class Parser<Token> {
 	}
 	
 	inline function unexpected():Dynamic {
-		throw new Unexpected(peek(), stream.curPos());
+		throw new Unexpected(peek(0), stream.curPos());
 		return null;
 	}
 		

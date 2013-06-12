@@ -32,7 +32,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 		return parseFile();
 	}
 	
-	override function peek(n = 0) {
+	override function peek(n) {
 		return if (n == 0)
 			switch(super.peek(0)) {
 				case {tok:CommentLine(_) | Sharp("end" | "else" | "elseif" | "if" | "error" | "line")}:

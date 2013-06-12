@@ -108,7 +108,7 @@ class ParserBuilder {
 				});
 				{
 					pos: def.pos,
-					expr: ESwitch(macro peek(), cl, def)
+					expr: ESwitch(macro peek(0), cl, def)
 				}
 			case Complex(c):
 				var inner = makeInner(c);
@@ -139,7 +139,7 @@ class ParserBuilder {
 					buildExtractor(pat, e, e2, s, def);
 				}
 			case EBinop(OpBoolAnd, e1, e2):
-				macro @:pos(pat.pos) switch peek() {
+				macro @:pos(pat.pos) switch peek(0) {
 					case $e1 if ($e2):
 						junk();
 						$e;
@@ -148,7 +148,7 @@ class ParserBuilder {
 			case EBinop(OpBoolOr, e1, e2):
 				makePattern(e1, e, macro throw stream.curPos() + ": " +$e2);
 			case _:
-				macro @:pos(pat.pos) switch peek() {
+				macro @:pos(pat.pos) switch peek(0) {
 					case $pat:
 						junk();
 						$e;
