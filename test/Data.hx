@@ -71,9 +71,14 @@ enum TokenDef {
 	Eof;
 }
 
-typedef Token = {
-	tok: TokenDef,
-	pos: Position
+class Token {
+	public var tok: TokenDef;
+	public var pos: Position;
+	
+	public function new(tok, pos) {
+		this.tok = tok;
+		this.pos = pos;
+	}
 }
 
 typedef EnumConstructor = {

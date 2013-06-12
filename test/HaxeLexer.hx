@@ -27,10 +27,7 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 	}
 	
 	static function mk(lexer:Lexer, td) {
-		return {
-			tok: td,
-			pos: mkPos(lexer.curPos())
-		}
+		return new Token(td, mkPos(lexer.curPos()));
 	}
 	
 	// @:mapping generates a map with lowercase enum constructor names as keys
