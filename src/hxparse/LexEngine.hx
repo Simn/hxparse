@@ -79,12 +79,13 @@ class LexEngine<T> {
 			}
 		}
 
-		for( f in finals )
-			for( n in nodes )
-				if( n == f ) {
-					s.finals.push(n.pid);
-					break;
-				}
+		if (s.final == -1)
+			for( f in finals )
+				for( n in nodes )
+					if( n == f ) {
+						s.final = n.pid;
+						break;
+					}
 		return s;
 	}
 	

@@ -110,7 +110,7 @@ class Lexer {
 		var lastMatchPos = pos;
 		var start = pos;
 		while(true) {
-			if (state.finals.length > 0) {
+			if (state.final > -1) {
 				lastMatch = state;
 				lastMatchPos = pos;
 			}
@@ -125,9 +125,9 @@ class Lexer {
 		}
 		pos = lastMatchPos;
 		current = input.readString(start, pos - start);
-		if (lastMatch == null || lastMatch.finals.length == 0)
+		if (lastMatch == null || lastMatch.final == -1)
 			throw new UnexpectedChar(String.fromCharCode(input.readByte(pos)), curPos());
-		return ruleset.functions[lastMatch.finals[0]](this);
+		return ruleset.functions[lastMatch.final](this);
 	}
 	
 	/**
@@ -142,7 +142,6 @@ class Lexer {
 		var cases = [];
 		var functions = [];
 		var eofFunction = null;
-		rules.reverse();
 		for (rule in rules) {
 			if (rule.rule == "") {
 				eofFunction = rule.func;
