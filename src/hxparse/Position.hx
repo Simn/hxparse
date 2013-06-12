@@ -35,6 +35,13 @@ class Position {
 	}
 	
 	/**
+		Returns a readable representation of `this` position;
+	**/
+	public function toString() {
+		return '$psource:line $pline:characters $pmin-$pmax';
+	}
+	
+	/**
 		Unifies two positions `p1` and `p2`, using the minimum `pmin` and
 		maximum `pmax` of both.
 		
