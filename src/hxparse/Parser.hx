@@ -81,7 +81,7 @@ class NoMatch<T> {
 	All extending classes are automatically transformed using the
 	`hxparse.ParserBuilder.build` macro.
  */
-@:autoBuild(hxparse.ParserBuilder.build())
+@:generic
 class Parser<Token> {
 
 	/**
@@ -98,11 +98,10 @@ class Parser<Token> {
 		
 		This is a convenience property for accessing `cache[offset - 1]`.
 	**/
-	public var last(get, null):Token;
+	public var last:Token;
 	
 	var stream:Lexer;
-	var offset = 0;
-	var cache:Array<Token>;
+	var token:haxe.ds.GenericStack.GenericCell<Token>;
 	
 	/**
 		Creates a new Parser instance over `LexerStream` `stream`.
@@ -110,7 +109,24 @@ class Parser<Token> {
 	public function new(lexer:Lexer, ruleset:Ruleset<Token>) {
 		this.stream = lexer;
 		this.ruleset = ruleset;
-		cache = [];
+	}
+	
+	/**
+		Returns the `n`th token without consuming it.
+	**/
+	@:doc
+	function peek(n:Int):Token {
+		if (token == null) {
+			token = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(ruleset), null);
+			n--;
+		}
+		var tok = token;
+		while (n > 0) {
+			if (tok.next == null) tok.next = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(ruleset), null);
+			tok = tok.next;
+			n--;
+		}
+		return tok.elt;
 	}
 	
 	/**
@@ -120,19 +136,8 @@ class Parser<Token> {
 	**/
 	@:doc
 	inline function junk() {
-		offset++;
-	}
-	
-	/**
-		Returns the `n`th token without consuming it.
-	**/
-	@:doc
-	function peek(n:Int):Token {
-		var index = offset + n;
-		while (cache[index] == null) {
-			cache.push(stream.token(ruleset));
-		}
-		return cache[index];
+		last = token.elt;
+		token = token.next;
 	}
 	
 	/**
@@ -149,9 +154,5 @@ class Parser<Token> {
 	inline function unexpected():Dynamic {
 		throw new Unexpected(peek(0), stream.curPos());
 		return null;
-	}
-		
-	inline function get_last() {
-		return cache[offset - 1];
 	}
 }
