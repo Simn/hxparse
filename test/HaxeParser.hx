@@ -363,18 +363,18 @@ class HaxeParser extends hxparse.Parser<Token> {
 							loop(aadd(acc,{pack:"macro",pos:p}));
 						case [{tok:Binop(OpMult)}, {tok:Semicolon, pos:p2}]:
 							{pos: p2, acc: acc, mode: IAll};
-						case _: serror();
+						case _: unexpected();
 					}
 				case [{tok:Semicolon, pos:p2}]:
 					{ pos: p2, acc: acc, mode: INormal};
 				case [{tok:Kwd(KwdIn)}, {tok:Const(CIdent(name))}, {tok:Semicolon, pos:p2}]:
 					{ pos: p2, acc: acc, mode: IAsName(name)};
-				case _: serror();
+				case _: unexpected();
 			}
 		}
 		var data = switch stream {
 			case [{tok:Const(CIdent(name)), pos:p}]: loop([{pack:name, pos:p}]);
-			case _: serror();
+			case _: unexpected();
 		}
 		return {
 			decl: EImport(data.acc,data.mode),
@@ -391,7 +391,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 		var p2 = switch stream {
 			case [{tok: BrClose, pos: p2}]:
 				p2;
-			case _: serror();
+			case _: unexpected();
 		}
 		return {
 			fields: l,
@@ -478,10 +478,10 @@ class HaxeParser extends hxparse.Parser<Token> {
 						switch stream {
 							case [l = parseTypeAnonymous(false)]: TExtend(t,l);
 							case [fl = parseClassFields(true, p1)]: TExtend(t, fl.fields);
-							case _: serror();
+							case _: unexpected();
 						}
 					case [l = parseClassFields(true, p1)]: TAnonymous(l.fields);
-					case _: serror();
+					case _: unexpected();
 				}
 			case [{tok:Question}, t = parseComplexTypeInner()]:
 				TOptional(t);
@@ -506,14 +506,14 @@ class HaxeParser extends hxparse.Parser<Token> {
 								msg: Custom("Type name should start with an uppercase letter"),
 								pos: ident.pos
 							}
-						case _: serror();
+						case _: unexpected();
 					}
 				} else {
 					var sub = switch stream {
 						case [{tok:Dot}]:
 							switch stream {
 								case [{tok:Const(CIdent(name))} && !isLowerIdent(name)]: name;
-								case _: serror();
+								case _: unexpected();
 							}
 						case _:
 							null;
@@ -550,7 +550,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 			case [t = parseComplexType()]: TPType(t);
 			case [{tok:Const(c), pos:p}]: TPExpr({expr:EConst(c), pos:p});
 			case [e = expr()]: TPExpr(e);
-			case _: serror();
+			case _: unexpected();
 		}
 	}
 
@@ -591,9 +591,9 @@ class HaxeParser extends hxparse.Parser<Token> {
 						switch stream {
 							case [{tok:BrClose}]: next(p2, []);
 							case [l = parseTypeAnonymous(false)]: next(p2, l);
-							case _: serror();
+							case _: unexpected();
 						}
-					case _: serror();
+					case _: unexpected();
 				}
 		}
 	}
@@ -613,7 +613,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 				}
 				var p2 = switch stream {
 					case [p = semicolon()]: p;
-					case _: serror();
+					case _: unexpected();
 				}
 				{
 					name: name.name,
@@ -649,7 +649,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 								var e = switch stream {
 									case [{tok:Binop(OpAssign)}, e = toplevelExpr(), p2 = semicolon()]: { expr: e, pos: p2 };
 									case [{tok:Semicolon, pos:p2}]: { expr: null, pos: p2 };
-									case _: serror();
+									case _: unexpected();
 								}
 								{
 									name: name.name,
@@ -660,7 +660,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 								var e = switch stream {
 									case [{tok:Binop(OpAssign)}, e = toplevelExpr(), p2 = semicolon()]: { expr: e, pos: p2 };
 									case [{tok:Semicolon, pos:p2}]: { expr: null, pos: p2 };
-									case _: serror();
+									case _: unexpected();
 								}
 								{
 									name: name.name,
@@ -674,7 +674,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 								{ expr: e, pos: e.pos };
 							case [{tok: Semicolon,pos:p}]:
 								{ expr: null, pos: p}
-							case _: serror();
+							case _: unexpected();
 						}
 						var f = {
 							params: pl,
@@ -689,9 +689,9 @@ class HaxeParser extends hxparse.Parser<Token> {
 						}
 					case _:
 						if (al.length == 0)
-							throw new hxparse.Parser.NoMatch(stream.curPos());
+							throw noMatch();
 						else
-							serror();
+							unexpected();
 				}
 			{
 				name: data.name,
@@ -775,7 +775,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 						switch stream {
 							case [{tok:POpen}, l = psep(Comma, parseComplexType), {tok:PClose}]: l;
 							case [t = parseComplexType()]: [t];
-							case _: serror();
+							case _: unexpected();
 						}
 					case _: [];
 				}
@@ -817,7 +817,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 		try {
 			var e = parseBlockElt();
 			return block(aadd(acc,e));
-		} catch(e:hxparse.Parser.NoMatch) {
+		} catch(e:hxparse.Parser.NoMatch<Dynamic>) {
 			acc.reverse();
 			return acc;
 		}
@@ -925,7 +925,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 						switch stream {
 							case [{tok:Comma}, t = parseComplexType(), {tok:PClose, pos:p2}]: exprNext({expr:ECast(e,t), pos: punion(p1,p2)});
 							case [{tok:PClose, pos:p2}]: exprNext({expr:ECast(e,null),pos:punion(p1,p2)});
-							case _: serror();
+							case _: unexpected();
 						}
 					case [e = secureExpr()]: exprNext({expr:ECast(e,null), pos:punion(p1, e.pos)});
 				}
@@ -933,7 +933,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 			case [{tok:Kwd(KwdNew), pos:p1}, t = parseTypePath(), {tok:POpen, pos:_}]:
 				switch stream {
 					case [al = psep(Comma, expr), {tok:PClose, pos:p2}]: exprNext({expr:ENew(t,al), pos:punion(p1, p2)});
-					case _: serror();
+					case _: unexpected();
 				}
 			case [{tok:POpen, pos: p1}, e = expr(), {tok:PClose, pos:p2}]: exprNext({expr:EParenthesis(e), pos:punion(p1, p2)});
 			case [{tok:BkOpen, pos:p1}, l = parseArrayDecl(), {tok:BkClose, pos:p2}]: exprNext({expr: EArrayDecl(l), pos:punion(p1,p2)});
@@ -1019,14 +1019,14 @@ class HaxeParser extends hxparse.Parser<Token> {
 						switch(e1) {
 							case {expr: EConst(CInt(v)), pos:p2} if (p2.max == p.min):
 								exprNext({expr:EConst(CFloat(v + ".")), pos:punion(p,p2)});
-							case _: serror();
+							case _: unexpected();
 						}
 				}
 			case [{tok:POpen, pos:_}]:
 				switch stream {
 					case [params = parseCallParams(e1), {tok:PClose, pos:p2}]:
 						exprNext({expr:ECall(e1,params),pos:punion(e1.pos,p2)});
-					case _: serror();
+					case _: unexpected();
 				}
 			case [{tok:BkOpen}, e2 = expr(), {tok:BkClose, pos:p2}]:
 				exprNext({expr:EArray(e1,e2), pos:punion(e1.pos,p2)});

@@ -96,8 +96,8 @@ class ParserBuilder {
 		return elast;
 	}
 	
-	static var unexpected = macro serror();
-	static var noMatch = macro throw new hxparse.Parser.NoMatch(stream.curPos(), stream.peek(0));
+	static var unexpected = macro unexpected();
+	static var noMatch = macro throw noMatch();
 		
 	static function makeCase(g:CaseGroup, def:Expr) {
 		return switch(g) {
@@ -165,7 +165,7 @@ class ParserBuilder {
 				try {
 					var __temp = $e2;
 					$i{name} = hxparse.Parser.Either.Left(__temp);
-				} catch (_:hxparse.Parser.NoMatch) {
+				} catch (_:hxparse.Parser.NoMatch<Dynamic>) {
 					var __temp = $def;
 					$i{name} = hxparse.Parser.Either.Right(__temp);
 				}
@@ -181,7 +181,7 @@ class ParserBuilder {
 				try {
 					var $s = $e2;
 					$e;
-				} catch (_:hxparse.Parser.NoMatch) {
+				} catch (_:hxparse.Parser.NoMatch<Dynamic>) {
 					$def;
 				}
 			}

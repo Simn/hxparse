@@ -86,7 +86,7 @@ class PrintfParser extends hxparse.Parser<PToken> {
 		}
 		return switch stream {
 			case [Value(v)]: Val(v); // we omit the config for simplicity reasons
-			case _: serror();
+			case _: unexpected();
 		}
 	}
 	

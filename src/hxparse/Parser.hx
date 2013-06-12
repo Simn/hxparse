@@ -90,20 +90,29 @@ class Parser<Token> {
 		this.stream = stream;
 	}
 	
+	/**
+		Consumes the current token.
+		
+		This method is automatically called after a successful match.
+	**/
+	@:doc
 	inline function junk() {
 		stream.junk();
 	}
 	
+	/**
+		Returns the `n`th token without consuming it.
+	**/
+	@:doc
 	function peek(n = 0):Token {
 		return stream.peek(n);
 	}
 	
-	inline function unexpected(t:Token):Dynamic {
-		throw new Unexpected(t, stream.curPos());
-		return null;
+	function noMatch() {
+		return new NoMatch(stream.curPos(), stream.peek(0));
 	}
 	
-	inline function serror():Dynamic {
+	inline function unexpected():Dynamic {
 		throw new Unexpected(peek(), stream.curPos());
 		return null;
 	}
