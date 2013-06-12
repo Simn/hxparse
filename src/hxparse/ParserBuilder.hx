@@ -97,7 +97,7 @@ class ParserBuilder {
 	}
 	
 	static var unexpected = macro serror();
-	static var noMatch = macro throw new hxparse.Parser.NoMatch();
+	static var noMatch = macro throw new hxparse.Parser.NoMatch(stream.curPos());
 		
 	static function makeCase(g:CaseGroup, def:Expr) {
 		return switch(g) {

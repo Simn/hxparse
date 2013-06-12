@@ -13,7 +13,7 @@ enum ParserErrorMsg {
 
 typedef ParserError = {
 	msg: ParserErrorMsg,
-	pos: hxparse.Lexer.Pos
+	pos: hxparse.Position
 }
 
 class HaxeParser extends hxparse.Parser<Token> {
@@ -689,7 +689,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 						}
 					case _:
 						if (al.length == 0)
-							throw new hxparse.Parser.NoMatch();
+							throw new hxparse.Parser.NoMatch(stream.curPos());
 						else
 							serror();
 				}

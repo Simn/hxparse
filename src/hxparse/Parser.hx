@@ -17,7 +17,7 @@ class Unexpected<Token> {
 	/**
 		The position in the input where `this` exception occured.
 	**/
-	public var pos:hxparse.Lexer.Pos;
+	public var pos:hxparse.Position;
 	
 	/**
 		Creates a new instance of Unexpected.
@@ -47,10 +47,18 @@ enum Either<S,T> {
 **/
 class NoMatch {
 	
+	public var pos(default, null):Position;
+	
 	/**
 		Creates a new NoMatch exception.
 	**/
-	public function new() { }
+	public function new(pos:hxparse.Position) {
+		this.pos = pos;
+	}
+	
+	public function toString() {
+		return "" + pos + ": No match";
+	}
 }
 
 /**

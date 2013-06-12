@@ -18,7 +18,7 @@ class LexerError {
 
 class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 
-	static inline function mkPos(p:Pos) {
+	static inline function mkPos(p:hxparse.Position) {
 		return {
 			file: p.psource,
 			min: p.pmin,

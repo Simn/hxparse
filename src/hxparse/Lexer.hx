@@ -2,31 +2,6 @@ package hxparse;
 import hxparse.Types;
 
 /**
-	The position information maintained by `Lexer`.
-**/
-typedef Pos = {
-	/**
-		Name of the source.
-	**/
-	var psource : String;
-	
-	/**
-		The line number.
-	**/
-	var pline : Int;
-	
-	/**
-		The first character position, counting from the beginning of the input.
-	**/
-	var pmin : Int;
-	
-	/**
-		The last character position, counting from the beginning of the input.
-	**/
-	var pmax : Int;
-}
-
-/**
 	UnexpectedChar is thrown by `Lexer.token` if it encounters a character for
 	which no state transition is defined.
 **/
@@ -40,7 +15,7 @@ class UnexpectedChar {
 	/**
 		The position in the input where `this` exception occured.
 	**/
-	public var pos:Pos;
+	public var pos:Position;
 	
 	/**
 		Creates a new instance of UnexpectedChar.
@@ -117,13 +92,8 @@ class Lexer {
 	/**
 		Returns the current position of `this` Lexer.
 	**/
-	public function curPos():Pos {
-		return {
-			psource: source,
-			pline: line,
-			pmin: pos - current.length,
-			pmax: pos
-		}
+	public function curPos():Position {
+		return new Position(source, line, pos - current.length, pos);
 	}
 	
 	/**
@@ -267,22 +237,5 @@ class Lexer {
 			}
 		}
 		return new Ruleset(new LexEngine(cases).firstState(),functions,eofFunction);
-	}
-	
-	/**
-		Unifies two positions `p1` and `p2`, using the minimum `pmin` and
-		maximum `pmax` of both.
-		
-		The resulting `psource` and `pline` are taken from `p1`.
-		
-		If `p1` or `p2` are null, the result is unspecified.
-	**/
-	static public function posUnion(p1:Pos, p2:Pos) {
-		return {
-			psource: p1.psource,
-			pline: p1.pline,
-			pmin: p1.pmin < p2.pmin ? p1.pmin : p2.pmin,
-			pmax: p1.pmax > p2.pmax ? p1.pmax : p2.pmax,
-		};
 	}
 }
