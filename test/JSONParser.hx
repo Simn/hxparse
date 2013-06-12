@@ -74,7 +74,7 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 
 class JSONParser extends hxparse.Parser<Token> {
 	public function new(input:haxe.byte.ByteData, sourceName:String) {
-		super(new hxparse.LexerStream(new JSONLexer(input, sourceName), JSONLexer.tok));
+		super(new JSONLexer(input, sourceName), JSONLexer.tok);
 	}
 		
 	public function parse():Dynamic {

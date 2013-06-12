@@ -1,5 +1,7 @@
 package hxparse;
 
+import hxparse.Types;
+
 /**
 	Unexpected is thrown by `Parser.serror`, which is invoked when an inner
 	token matching fails.
@@ -81,13 +83,34 @@ class NoMatch<T> {
  */
 @:autoBuild(hxparse.ParserBuilder.build())
 class Parser<Token> {
-	var stream:LexerStream<Token>;
 
+	/**
+		The current `Ruleset`.
+		
+		This value is passed to the lexer when the `peek` method is invoked.
+		Changing it during parsing can thus modify the tokenizing behavior
+		of the lexer.
+	**/
+	public var ruleset:Ruleset<Token>;
+	
+	/**
+		Returns the last matched token.
+		
+		This is a convenience property for accessing `cache[offset - 1]`.
+	**/
+	public var last(get, null):Token;
+	
+	var stream:Lexer;
+	var offset = 0;
+	var cache:Array<Token>;
+	
 	/**
 		Creates a new Parser instance over `LexerStream` `stream`.
 	**/
-	public function new(stream:LexerStream<Token>) {
-		this.stream = stream;
+	public function new(lexer:Lexer, ruleset:Ruleset<Token>) {
+		this.stream = lexer;
+		this.ruleset = ruleset;
+		cache = [];
 	}
 	
 	/**
@@ -97,7 +120,7 @@ class Parser<Token> {
 	**/
 	@:doc
 	inline function junk() {
-		stream.junk();
+		offset++;
 	}
 	
 	/**
@@ -105,15 +128,30 @@ class Parser<Token> {
 	**/
 	@:doc
 	function peek(n = 0):Token {
-		return stream.peek(n);
+		var index = offset + n;
+		while (cache[index] == null) {
+			cache.push(stream.token(ruleset));
+		}
+		return cache[index];
+	}
+	
+	/**
+		Returns the current lexer position.
+	**/
+	public inline function curPos() {
+		return stream.curPos();
 	}
 	
 	function noMatch() {
-		return new NoMatch(stream.curPos(), stream.peek(0));
+		return new NoMatch(stream.curPos(), peek(0));
 	}
 	
 	inline function unexpected():Dynamic {
 		throw new Unexpected(peek(), stream.curPos());
 		return null;
+	}
+		
+	inline function get_last() {
+		return cache[offset - 1];
 	}
 }

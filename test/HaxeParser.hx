@@ -23,7 +23,7 @@ class HaxeParser extends hxparse.Parser<Token> {
 	var inMacro:Bool;
 	
 	public function new(input:haxe.byte.ByteData, sourceName:String) {
-		super(new hxparse.LexerStream(new HaxeLexer(input, sourceName), HaxeLexer.tok));
+		super(new HaxeLexer(input, sourceName), HaxeLexer.tok);
 		inMacro = false;
 		doc = "";
 	}
@@ -255,15 +255,15 @@ class HaxeParser extends hxparse.Parser<Token> {
 	}
 
 	function semicolon() {
-		return if (stream.last.tok == BrClose) {
+		return if (last.tok == BrClose) {
 			switch stream {
 				case [{tok: Semicolon, pos:p}]: p;
-				case _: stream.last.pos;
+				case _: last.pos;
 			}
 		} else switch stream {
 			case [{tok: Semicolon, pos:p}]: p;
 		case _:
-			var pos = stream.last.pos;
+			var pos = last.pos;
 			if (doResume)
 				pos
 			else
