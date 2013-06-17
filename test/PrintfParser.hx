@@ -53,7 +53,7 @@ class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class PrintfParser extends hxparse.Parser<PToken> implements hxparse.ParserBuilder {
+class PrintfParser extends hxparse.Parser<PrintfLexer, PToken> implements hxparse.ParserBuilder {
 	public function new(input:byte.ByteData) {
 		super(new PrintfLexer(input), PrintfLexer.tok);
 	}

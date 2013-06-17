@@ -1,7 +1,5 @@
 package hxparse;
 
-import hxparse.Types;
-
 /**
 	Unexpected is thrown by `Parser.serror`, which is invoked when an inner
 	token matching fails.
@@ -82,7 +80,7 @@ class NoMatch<T> {
 	`hxparse.ParserBuilder.build` macro.
  */
 @:generic
-class Parser<Token> {
+class Parser<S:TokenSource<Token>, Token> {
 
 	/**
 		The current `Ruleset`.
@@ -100,14 +98,15 @@ class Parser<Token> {
 	**/
 	public var last:Token;
 	
-	var stream:Lexer;
+	var stream:S;
 	var token:haxe.ds.GenericStack.GenericCell<Token>;
 	
 	/**
-		Creates a new Parser instance over `LexerStream` `stream`.
+		Creates a new Parser instance over `TokenSource` `stream` with the
+		initial `Ruleset` being `ruleset`.
 	**/
-	public function new(lexer:Lexer, ruleset:Ruleset<Token>) {
-		this.stream = lexer;
+	public function new(stream:S, ruleset:Ruleset<Token>) {
+		this.stream = stream;
 		this.ruleset = ruleset;
 	}
 	

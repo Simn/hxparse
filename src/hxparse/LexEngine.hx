@@ -1,5 +1,4 @@
 package hxparse;
-import hxparse.Types;
 
 /**
 	LexEngine handles pattern parsing and state transformation.

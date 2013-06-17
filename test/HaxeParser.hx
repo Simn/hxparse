@@ -16,7 +16,7 @@ typedef ParserError = {
 	pos: hxparse.Position
 }
 
-class HaxeParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder {
+class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.ParserBuilder {
 
 	var doResume = false;
 	var doc:String;

@@ -1,5 +1,4 @@
 package hxparse;
-import hxparse.Types;
 
 /**
 	UnexpectedChar is thrown by `Lexer.token` if it encounters a character for

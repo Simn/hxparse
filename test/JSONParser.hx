@@ -72,7 +72,7 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class JSONParser extends hxparse.Parser<Token> implements hxparse.ParserBuilder {
+class JSONParser extends hxparse.Parser<JSONLexer, Token> implements hxparse.ParserBuilder {
 	public function new(input:byte.ByteData, sourceName:String) {
 		super(new JSONLexer(input, sourceName), JSONLexer.tok);
 	}
