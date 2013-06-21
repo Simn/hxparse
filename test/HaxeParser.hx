@@ -843,14 +843,19 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 	}
 
 	function parseArrayDecl() {
-		return switch stream {
-			case [e = expr()]:
-				switch stream {
-					case [{tok:Comma}, l = parseArrayDecl()]: aadd(l, e);
-					case _: [e];
-				}
-			case _: [];
+		var acc = [];
+		while(true) {
+			switch stream {
+				case [e = expr()]:
+					acc.push(e);
+					switch stream {
+						case [{tok: Comma}]:
+						case _: break;
+					}
+				case _: break;
+			}
 		}
+		return acc;
 	}
 
 	function parseVarDecl() {
