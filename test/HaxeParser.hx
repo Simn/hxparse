@@ -1117,19 +1117,18 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 	}
 
 	function parseCallParams(ec) {
-		var e = switch stream {
-			case [e = expr()]: e;
-			case _: null;
+		var ret = [];
+		switch stream {
+			case [e = expr()]: ret.push(e);
+			case _: return [];
 		}
-		function loop(acc:Array<Expr>) {
-			return switch stream {
-				case [{tok:Comma}, e = expr()]: loop(aadd(acc,e));
-				case _:
-					acc.reverse();
-					acc;
+		while(true) {
+			switch stream {
+				case [{tok: Comma}, e = expr()]: ret.push(e);
+				case _: break;
 			}
 		}
-		return e == null ? [] : loop([e]);
+		return ret;
 	}
 
 	function secureExpr() {
