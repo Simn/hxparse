@@ -17,7 +17,7 @@ typedef NativeByteRepresentation = haxe.ds.Vector<Int>;
 abstract ByteData(NativeByteRepresentation) {
 	
 	public var length(get, never):Int;
-	function get_length():Int return this.length;
+	inline function get_length():Int return this.length;
 
 	public var reader(get, never):LittleEndianReader;
 	inline function get_reader() return new LittleEndianReader(new ByteData(this));

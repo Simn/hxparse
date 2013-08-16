@@ -58,8 +58,6 @@ class ParserBuilderImpl {
 		}
 	}
 	
-	static var fcount = 0;
-	
 	static function transformCases(needVal:Bool, cl:Array<Case>) {
 		var groups = [];
 		var group = [];
@@ -130,7 +128,7 @@ class ParserBuilderImpl {
 	static function makePattern(pat:Expr, e:Expr, def:Expr) {
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
-				if (def == unexpected) {
+				if (def == unexpected || def == noMatch) {
 					macro {
 						var $s = $e2;
 						$e;

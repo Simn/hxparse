@@ -54,7 +54,6 @@ class Lexer {
 	var source:String;
 	var line:Int;
 	var pos:Int;
-	var carriage:Bool;
 	var eof(default, null):Bool;
 	
 	/**
@@ -66,7 +65,6 @@ class Lexer {
 		If `input` is null, the result is unspecified.
 	**/
 	public function new(input:byte.ByteData, sourceName:String = "<null>") {
-		carriage = false;
 		current = "";
 		this.input = input;
 		source = sourceName;
@@ -117,7 +115,8 @@ class Lexer {
 				eof = true;
 				break;
 			}
-			var i = input.readByte(pos++);
+			var i = input.readByte(pos);
+			pos++;
 			state = state.trans.get(i);
 			if (state == null)
 				break;
