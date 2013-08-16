@@ -844,16 +844,18 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 
 	function parseArrayDecl() {
 		var acc = [];
+		var br = false;
 		while(true) {
 			switch stream {
 				case [e = expr()]:
 					acc.push(e);
 					switch stream {
 						case [{tok: Comma}]:
-						case _: break;
+						case _: br = true;
 					}
-				case _: break;
+				case _: br = true;
 			}
+			if (br) break;
 		}
 		return acc;
 	}

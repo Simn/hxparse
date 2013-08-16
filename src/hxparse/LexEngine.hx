@@ -10,7 +10,7 @@ package hxparse;
 	Multiple patterns can then be passed to the constructor to generate the
 	state machine, which is obtainable from the `firstState` method.
 **/
-class LexEngine<T> {
+class LexEngine {
 	
 	var uid : Int;
 	var nodes : Array<Node>;
