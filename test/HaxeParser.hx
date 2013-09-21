@@ -179,7 +179,7 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 				switch stream {
 					case [{tok: sep2} && sep2 == sep]:
 				}
-			} catch(e:hxparse.Parser.NoMatch<Dynamic>) {
+			} catch(e:hxparse.NoMatch<Dynamic>) {
 				break;
 			}
 		}
@@ -817,7 +817,7 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 		try {
 			var e = parseBlockElt();
 			return block(aadd(acc,e));
-		} catch(e:hxparse.Parser.NoMatch<Dynamic>) {
+		} catch(e:hxparse.NoMatch<Dynamic>) {
 			acc.reverse();
 			return acc;
 		}

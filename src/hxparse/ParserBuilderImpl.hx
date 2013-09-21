@@ -160,7 +160,7 @@ class ParserBuilderImpl {
 			try {
 				var $s = $e2;
 				$e;
-			} catch (_:hxparse.Parser.NoMatch<Dynamic>) {
+			} catch (_:hxparse.NoMatch<Dynamic>) {
 				$def;
 			}
 		}
