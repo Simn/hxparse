@@ -239,7 +239,7 @@ class LexEngine {
 		return p.pattern;
 	}
 	
-	inline static function next( a, b ) {
+	static function next( a, b ) {
 		return a == Empty ? b : Next(a, b);
 	}
 	

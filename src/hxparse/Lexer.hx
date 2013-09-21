@@ -76,7 +76,7 @@ class Lexer {
 	/**
 		Returns the current position of `this` Lexer.
 	**/
-	public function curPos():Position {
+	public inline function curPos():Position {
 		return new Position(source, line, pos - current.length, pos);
 	}
 	

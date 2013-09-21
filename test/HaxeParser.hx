@@ -44,7 +44,7 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 			super.peek(n);
 	}
 
-	static inline function punion(p1:Position, p2:Position) {
+	static function punion(p1:Position, p2:Position) {
 		return {
 			file: p1.file,
 			min: p1.min < p2.min ? p1.min : p2.min,
