@@ -1,11 +1,23 @@
 import haxe.Resource;
+import hxparse.NoMatch;
+import hxparse.Unexpected;
+
 class Test {
 	
 	static function main() {
 		function run() {
-			var i = byte.ByteData.ofString( Resource.getString('HaxeFile') );
-			var parser = new HaxeParser(i, '/');
-			return parser.parse();
+			var i = byte.ByteData.ofString(Resource.getString('HaxeFile'));
+			var parser = new HaxeParser(i, 'HaxeFile.hx');
+			var data = try {
+				parser.parse();
+			} catch(e:NoMatch<Dynamic>) {
+				trace(e.pos.format(i) + ": Unexpected " +e.token.tok);
+				throw e;
+			} catch(e:Unexpected<Dynamic>) {
+				trace(e.pos.format(i) + ": Unexpected " + e.token.tok);
+				throw e;
+			}
+			return data;
 		}
 		var r = haxe.Timer.measure(run);
 		trace(r.pack);

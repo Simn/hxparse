@@ -52,7 +52,6 @@ class Lexer {
 	
 	var input:byte.ByteData;
 	var source:String;
-	var line:Int;
 	var pos:Int;
 	var eof(default, null):Bool;
 	
@@ -68,7 +67,6 @@ class Lexer {
 		current = "";
 		this.input = input;
 		source = sourceName;
-		line = 1;
 		pos = 0;
 		eof = false;
 	}
@@ -77,9 +75,9 @@ class Lexer {
 		Returns the current position of `this` Lexer.
 	**/
 	public inline function curPos():Position {
-		return new Position(source, line, pos - current.length, pos);
+		return new Position(source, pos - current.length, pos);
 	}
-	
+		
 	/**
 		Returns the next token according to `ruleset`.
 		
