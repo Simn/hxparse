@@ -5,9 +5,6 @@ package hxparse;
 	
 	The intended usage is to extend it and utilize its method as an API where
 	required.
-	
-	All extending classes are automatically transformed using the
-	`hxparse.ParserBuilder.build` macro.
  */
 @:generic
 class Parser<S:TokenSource<Token>, Token> {

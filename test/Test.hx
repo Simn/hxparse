@@ -11,11 +11,9 @@ class Test {
 			var data = try {
 				parser.parse();
 			} catch(e:NoMatch<Dynamic>) {
-				trace(e.pos.format(i) + ": Unexpected " +e.token.tok);
-				throw e;
+				throw e.pos.format(i) + ": Unexpected " +e.token.tok;
 			} catch(e:Unexpected<Dynamic>) {
-				trace(e.pos.format(i) + ": Unexpected " + e.token.tok);
-				throw e;
+				throw e.pos.format(i) + ": Unexpected " + e.token.tok;
 			}
 			return data;
 		}

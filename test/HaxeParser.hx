@@ -702,29 +702,16 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 			}
 		}
 	}
-//
-	//function parseCfRights(allowStatic,l) {
-		//return switch stream {
-			//case [{tok:Kwd(Static)} && allowStatic, l = parseCfRights(false, aadd(l, AStatic))]: l;
-			//case [{tok:Kwd(Macro)} && !l.has(AMacro), l = parseCfRights(allowStatic, aadd(l, AMacro))]: l;
-			//case [{tok:Kwd(Public)} && !(l.has(APublic) || l.has(APrivate)), l = parseCfRights(allowStatic, aadd(l, APublic))]: l;
-			//case [{tok:Kwd(Private)} && !(l.has(APublic) || l.has(APrivate)), l = parseCfRights(allowStatic, aadd(l, APrivate))]: l;
-			//case [{tok:Kwd(Override)} && !l.has(AOverride), l = parseCfRights(false, aadd(l, AOverride))]: l;
-			//case [{tok:Kwd(Dynamic)} && !l.has(ADynamic), l = parseCfRights(allowStatic, aadd(l, ADynamic))]: l;
-			//case [{tok:Kwd(Inline)}, l = parseCfRights(allowStatic, aadd(l, AInline))]: l;
-			//case _: l;
-		//}
-	//}
-	
+
 	function parseCfRights(allowStatic,l) {
 		return switch stream {
-			case [{tok:Kwd(KwdMacro)}, l = parseCfRights(allowStatic, aadd(l, AMacro))]: l;
-			case [{tok:Kwd(KwdPublic)}, l = parseCfRights(allowStatic, aadd(l, APublic))]: l;
-			case [{tok:Kwd(KwdPrivate)}, l = parseCfRights(allowStatic, aadd(l, APrivate))]: l;
-			case [{tok:Kwd(KwdOverride)}, l = parseCfRights(false, aadd(l, AOverride))]: l;
-			case [{tok:Kwd(KwdDynamic)}, l = parseCfRights(allowStatic, aadd(l, ADynamic))]: l;
-			case [{tok:Kwd(KwdInline)}, l = parseCfRights(allowStatic, aadd(l, AInline))]: l;
 			case [{tok:Kwd(KwdStatic)} && allowStatic, l = parseCfRights(false, aadd(l, AStatic))]: l;
+			case [{tok:Kwd(KwdMacro)} && !l.has(AMacro), l = parseCfRights(allowStatic, aadd(l, AMacro))]: l;
+			case [{tok:Kwd(KwdPublic)} && !(l.has(APublic) || l.has(APrivate)), l = parseCfRights(allowStatic, aadd(l, APublic))]: l;
+			case [{tok:Kwd(KwdPrivate)} && !(l.has(APublic) || l.has(APrivate)), l = parseCfRights(allowStatic, aadd(l, APrivate))]: l;
+			case [{tok:Kwd(KwdOverride)} && !l.has(AOverride), l = parseCfRights(false, aadd(l, AOverride))]: l;
+			case [{tok:Kwd(KwdDynamic)} && !l.has(ADynamic), l = parseCfRights(allowStatic, aadd(l, ADynamic))]: l;
+			case [{tok:Kwd(KwdInline)}, l = parseCfRights(allowStatic, aadd(l, AInline))]: l;
 			case _: l;
 		}
 	}

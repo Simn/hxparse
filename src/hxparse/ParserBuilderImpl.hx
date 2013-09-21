@@ -137,11 +137,14 @@ class ParserBuilderImpl {
 					buildExtractor(pat, e, e2, s, def);
 				}
 			case EBinop(OpBoolAnd, e1, e2):
-				macro @:pos(pat.pos) switch peek(0) {
-					case $e1 if ($e2):
-						junk();
-						$e;
-					case _: $def;
+				macro @:pos(pat.pos) {
+					function def() return $def;
+					switch peek(0) {
+						case $e1 if ($e2):
+							junk();
+							$e;
+						case _: def();
+					}
 				}
 			case EBinop(OpBoolOr, e1, e2):
 				makePattern(e1, e, macro throw stream.curPos() + ": " +$e2);
