@@ -16,14 +16,14 @@ class Parser<S:TokenSource<Token>, Token> {
 		Changing it during parsing can thus modify the tokenizing behavior
 		of the lexer.
 	**/
-	public var ruleset:Ruleset<Token>;
+	public var ruleset(default, null):Ruleset<Token>;
 	
 	/**
 		Returns the last matched token.
 		
 		This is a convenience property for accessing `cache[offset - 1]`.
 	**/
-	public var last:Token;
+	public var last(default, null):Token;
 	
 	var stream:S;
 	var token:haxe.ds.GenericStack.GenericCell<Token>;
@@ -73,7 +73,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		return stream.curPos();
 	}
 	
-	function noMatch() {
+	inline function noMatch() {
 		return new NoMatch(stream.curPos(), peek(0));
 	}
 	

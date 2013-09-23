@@ -114,6 +114,6 @@ class Lexer {
 				functions.push(rule.func);
 			}
 		}
-		return new Ruleset(new LexEngine(cases).firstState(),functions,eofFunction);
+		return new Ruleset(new LexEngine(cases).firstState(), functions, eofFunction);
 	}
 }

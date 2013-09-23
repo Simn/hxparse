@@ -24,7 +24,7 @@ class Ruleset<Token> {
 	/**
 		Creates a new Ruleset.
 	**/
-	public function new(state,functions,eofFunction) {
+	public function new(state, functions, eofFunction) {
 		this.state = state;
 		this.functions = functions;
 		this.eofFunction = eofFunction;
