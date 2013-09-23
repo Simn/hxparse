@@ -10,6 +10,8 @@ typedef ByteData = byte.cpp.ByteData;
 typedef ByteData = byte.java.ByteData;
 #elseif php
 typedef ByteData = byte.php.ByteData;
+#elseif js
+typedef ByteData = byte.js.ByteData;
 #else
 
 typedef NativeByteRepresentation = haxe.ds.Vector<Int>;
