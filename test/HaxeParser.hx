@@ -165,7 +165,7 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 		}
 	}
 
-	static inline function aadd<T>(a:Array<T>, t:T) {
+	static function aadd<T>(a:Array<T>, t:T) {
 		a.push(t);
 		return a;
 	}
@@ -193,10 +193,13 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 	}
 
 	function plist<T>(f:Void->T):Array<T> {
-		return switch stream {
-			case [v = f(), l = plist(f)]: aadd(l,v);
-			case _: [];
-		}
+		var acc = [];
+		try {
+			while(true) {
+				acc.push(f());
+			}
+		} catch(e:hxparse.NoMatch<Dynamic>) {}
+		return acc;
 	}
 
 	function ident() {
@@ -352,33 +355,38 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 	}
 
 	function parseImport(p1) {
-		function loop(acc):{pos:Position, mode:ImportMode, acc:Array<{pack:String, pos:Position}>} {
-			return switch stream {
+		var acc = switch stream {
+			case [{tok:Const(CIdent(name)), pos:p}]: [{pack:name, pos:p}];
+			case _: unexpected();
+		}
+		while(true) {
+			switch stream {
 				case [{tok: Dot}]:
 					switch stream {
 						case [{tok:Const(CIdent(k)), pos: p}]:
-							loop(aadd(acc,{pack:k,pos:p}));
+							acc.push({pack:k,pos:p});
 						case [{tok:Kwd(KwdMacro), pos:p}]:
-							loop(aadd(acc,{pack:"macro",pos:p}));
+							acc.push({pack:"macro",pos:p});
 						case [{tok:Binop(OpMult)}, {tok:Semicolon, pos:p2}]:
-							{pos: p2, acc: acc, mode: IAll};
+							return {
+								decl: EImport(acc, IAll),
+								pos: p2
+							}
 						case _: unexpected();
 					}
 				case [{tok:Semicolon, pos:p2}]:
-					{ pos: p2, acc: acc, mode: INormal};
+					return {
+						decl: EImport(acc, INormal),
+						pos: p2
+					}
 				case [{tok:Kwd(KwdIn)}, {tok:Const(CIdent(name))}, {tok:Semicolon, pos:p2}]:
-					{ pos: p2, acc: acc, mode: IAsName(name)};
+					return {
+						decl: EImport(acc, IAsName(name)),
+						pos: p2
+					}
 				case _: unexpected();
 			}
 		}
-		var data = switch stream {
-			case [{tok:Const(CIdent(name)), pos:p}]: loop([{pack:name, pos:p}]);
-			case _: unexpected();
-		}
-		return {
-			decl: EImport(data.acc,data.mode),
-			pos: punion(p1, data.pos)
-		};
 	}
 
 	function parsePackage() {
