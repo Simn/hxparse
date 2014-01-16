@@ -483,8 +483,8 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 					case [l = parseTypeAnonymous(false)]: TAnonymous(l);
 					case [{tok:Binop(OpGt)}, t = parseTypePath(), {tok:Comma}]:
 						switch stream {
-							case [l = parseTypeAnonymous(false)]: TExtend(t,l);
-							case [fl = parseClassFields(true, p1)]: TExtend(t, fl.fields);
+							case [l = parseTypeAnonymous(false)]: TExtend([t],l);
+							case [fl = parseClassFields(true, p1)]: TExtend([t], fl.fields);
 							case _: unexpected();
 						}
 					case [l = parseClassFields(true, p1)]: TAnonymous(l.fields);
