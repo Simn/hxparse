@@ -387,6 +387,19 @@ class LexEngine {
 			case '\\'.code:
 				c = StringTools.fastCodeAt(pattern, i++);
 				if ( StringTools.isEof(c) ) c = '\\'.code;
+				else if (c >= "0".code && c <= "9".code) {
+					var v = c - 48;
+					while(true) {
+						var cNext = StringTools.fastCodeAt(pattern, i);
+						if (cNext >= "0".code && cNext <= "9".code) {
+							v = v * 10 + (cNext - 48);
+							++i;
+						} else {
+							break;
+						}
+					}
+					c = v;
+				}
 				r = next(r, Match(single(c)));
 			default:
 				r = next(r, Match(single(c)));
