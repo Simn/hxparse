@@ -988,7 +988,7 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 			case [{tok:Kwd(KwdDo), pos:p1}, e = expr(), {tok:Kwd(KwdWhile)}, {tok:POpen}, cond = expr(), {tok:PClose}]: { expr: EWhile(cond,e,false), pos:punion(p1, e.pos)};
 			case [{tok:Kwd(KwdSwitch), pos:p1}, e = expr(), {tok:BrOpen}, cases = parseSwitchCases(e,[]), {tok:BrClose, pos:p2}]:
 				{ expr: ESwitch(e,cases.cases,cases.def), pos:punion(p1,p2)};
-			case [{tok:Kwd(KwdTry), pos:p1}, e = expr(), cl = plist(parseCatch.bind(e))]:
+			case [{tok:Kwd(KwdTry), pos:p1}, e = expr(), cl = plist(parseCatch)]:
 				{ expr: ETry(e,cl), pos:p1};
 			case [{tok:IntInterval(i), pos:p1}, e2 = expr()]: makeBinop(OpInterval,{expr:EConst(CInt(i)), pos:p1}, e2);
 			case [{tok:Kwd(KwdUntyped), pos:p1}, e = expr()]: { expr: EUntyped(e), pos:punion(p1,e.pos)};
@@ -1093,7 +1093,7 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 		}
 	}
 
-	function parseCatch(etry) {
+	function parseCatch() {
 		return switch stream {
 			case [{tok:Kwd(KwdCatch), pos:p}, {tok:POpen}, id = ident(), ]:
 				switch stream {
