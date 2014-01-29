@@ -41,7 +41,6 @@ abstract ByteData(NativeByteRepresentation) {
 	
 	public function readString(pos:Int, len:Int) {
 		var s = "";
-		var fcc = String.fromCharCode;
 		var i = pos;
 		var max = pos + len;
 		// utf8-encode
@@ -49,16 +48,16 @@ abstract ByteData(NativeByteRepresentation) {
 			var c = readByte(i++);
 			if( c < 0x80 ) {
 				if( c == 0 ) break;
-				s += fcc(c);
+				s += String.fromCharCode(c);
 			} else if( c < 0xE0 )
-				s += fcc( ((c & 0x3F) << 6) | (readByte(i++) & 0x7F) );
+				s += String.fromCharCode( ((c & 0x3F) << 6) | (readByte(i++) & 0x7F) );
 			else if( c < 0xF0 ) {
 				var c2 = readByte(i++);
-				s += fcc( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | (readByte(i++) & 0x7F) );
+				s += String.fromCharCode( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | (readByte(i++) & 0x7F) );
 			} else {
 				var c2 = readByte(i++);
 				var c3 = readByte(i++);
-				s += fcc( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (readByte(i++) & 0x7F) );
+				s += String.fromCharCode( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (readByte(i++) & 0x7F) );
 			}
 		}
 		return s;
