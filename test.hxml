@@ -1,0 +1,10 @@
+-cp src
+-cp test
+-main Test
+-dce full
+-resource TestMacro.hx@HaxeFile
+-neko bin/hxparse.n
+
+--next
+
+-cmd neko bin/hxparse.n
