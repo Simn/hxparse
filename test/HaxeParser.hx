@@ -17,14 +17,25 @@ typedef ParserError = {
 
 class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.ParserBuilder {
 
+	var defines:Map<String, Dynamic>;
+
+	var mstack:Array<Bool>;
 	var doResume = false;
 	var doc:String;
 	var inMacro:Bool;
 	
 	public function new(input:byte.ByteData, sourceName:String) {
 		super(new HaxeLexer(input, sourceName), HaxeLexer.tok);
+		mstack = [];
+		defines = new Map();
+		defines.set("true", true);
 		inMacro = false;
 		doc = "";
+	}
+
+	public function define(flag:String, ?value:Dynamic)
+	{
+		defines.set(flag, value);
 	}
 
 	public function parse() {
@@ -34,13 +45,100 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 	override function peek(n) {
 		return if (n == 0)
 			switch(super.peek(0)) {
-				case {tok:CommentLine(_) | Sharp("end" | "else" | "elseif" | "if" | "error" | "line")}:
+				case {tok:CommentLine(_) | Sharp("error" | "line")}:
 					junk();
+					peek(0);
+				case {tok:Sharp(cond)}:
+					junk();
+					switch (cond) {
+						case "if":
+							mstack.unshift(parseMacroCond());
+							if (!mstack[0]) skipTokens();
+						case "elseif":
+							var bool = parseMacroCond();
+							if (mstack[0]) skipTokens();
+							else
+							{
+								mstack[0] = bool;
+								if (!mstack[0]) skipTokens();
+							}
+						case "else":
+							if (mstack[0]) skipTokens();
+							else mstack[0] = true;
+							peek(0);
+						case "end":
+							mstack.shift();
+							peek(0);
+						case _:
+							throw "wtf";
+					}
 					peek(0);
 				case t: t;
 			}
 		else
 			super.peek(n);
+	}
+
+	function parseMacroCond():Bool
+	{
+		return switch super.peek(0) {
+			case {tok:Const(CIdent(s))}:
+				junk();
+				defines.exists(s);
+			case {tok:Kwd(k)}:
+				junk();
+				var str = Std.string(k).substr(3).toLowerCase();
+				defines.exists(str);
+			case {tok:Unop(OpNot)}:
+				junk();
+				!parseMacroCond();
+			case {tok:POpen}:
+				junk();
+				var val = parseMacroCond();
+				while (true) switch super.peek(0) {
+					case {tok:Binop(OpBoolAnd)}:
+						junk();
+						val = val && parseMacroCond();
+					case {tok:Binop(OpBoolOr)}:
+						junk();
+						val = val || parseMacroCond();
+					case {tok:PClose}:
+						junk();
+						break;
+					case tok:
+						throw tok;
+						false;
+				}
+				val;
+			case tok:
+				throw tok;
+				false;
+		}
+	}
+
+	function skipTokens()
+	{
+		var start = mstack.length;
+
+		while (true)
+		{	
+			switch (super.peek(0))
+			{
+				case {tok:Sharp("if")}:
+					mstack.unshift(parseMacroCond());
+				case {tok:Sharp("elseif")}:
+					if (mstack.length == start) break;
+					if (!mstack[0]) mstack[0] = parseMacroCond();
+				case {tok:Sharp("else")}:
+					if (mstack.length == start) break;
+					else if (!mstack[0]) mstack[0] = true;
+				case {tok:Sharp("end")}:
+					if (mstack.length == start) break;
+					mstack.shift();
+				case _:
+			}
+			junk();
+		}
 	}
 
 	static function punion(p1:Position, p2:Position) {

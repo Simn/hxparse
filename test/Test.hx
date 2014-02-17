@@ -8,6 +8,7 @@ class Test {
 		function run() {
 			var i = byte.ByteData.ofString(Resource.getString('HaxeFile'));
 			var parser = new HaxeParser(i, 'HaxeFile.hx');
+			parser.define("js");
 			var data = try {
 				parser.parse();
 			} catch(e:NoMatch<Dynamic>) {
@@ -18,7 +19,7 @@ class Test {
 			return data;
 		}
 		var r = haxe.Timer.measure(run);
-		trace(r.pack);
+		trace(r.decls);
 		//trace(r.decls);
 		
 		var parser = new PrintfParser(byte.ByteData.ofString("Valu$$e: $-050.2f kg"));
