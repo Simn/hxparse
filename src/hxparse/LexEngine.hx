@@ -78,13 +78,16 @@ class LexEngine {
 			}
 		}
 
-		if (s.final == -1)
+		function setFinal() {
 			for( f in finals )
 				for( n in nodes )
 					if( n == f ) {
 						s.final = n.pid;
-						break;
+						return;
 					}
+		}
+		if (s.final == -1)
+			setFinal();
 		return s;
 	}
 	
