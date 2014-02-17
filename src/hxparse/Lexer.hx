@@ -1,38 +1,6 @@
 package hxparse;
 
 /**
-	UnexpectedChar is thrown by `Lexer.token` if it encounters a character for
-	which no state transition is defined.
-**/
-class UnexpectedChar {
-	
-	/**
-		The character which caused `this` exception.
-	**/
-	public var char:String;
-	
-	/**
-		The position in the input where `this` exception occured.
-	**/
-	public var pos:Position;
-	
-	/**
-		Creates a new instance of UnexpectedChar.
-	**/
-	public function new(char, pos) {
-		this.char = char;
-		this.pos = pos;
-	}
-	
-	/**
-		Returns a readable representation of `this` exception.
-	**/
-	public function toString() {
-		return '$pos: Unexpected $char';
-	}
-}
-
-/**
 	Lexer matches a sequence of characters against a set of rule patterns.
 	
 	An instance of Lexer is created once for each input and maintains state
@@ -52,9 +20,7 @@ class Lexer {
 	
 	var input:byte.ByteData;
 	var source:String;
-	var line:Int;
 	var pos:Int;
-	var carriage:Bool;
 	var eof(default, null):Bool;
 	
 	/**
@@ -66,11 +32,9 @@ class Lexer {
 		If `input` is null, the result is unspecified.
 	**/
 	public function new(input:byte.ByteData, sourceName:String = "<null>") {
-		carriage = false;
 		current = "";
 		this.input = input;
 		source = sourceName;
-		line = 1;
 		pos = 0;
 		eof = false;
 	}
@@ -78,10 +42,10 @@ class Lexer {
 	/**
 		Returns the current position of `this` Lexer.
 	**/
-	public function curPos():Position {
-		return new Position(source, line, pos - current.length, pos);
+	public inline function curPos():Position {
+		return new Position(source, pos - current.length, pos);
 	}
-	
+		
 	/**
 		Returns the next token according to `ruleset`.
 		
@@ -117,7 +81,8 @@ class Lexer {
 				eof = true;
 				break;
 			}
-			var i = input.readByte(pos++);
+			var i = input.readByte(pos);
+			pos++;
 			state = state.trans.get(i);
 			if (state == null)
 				break;
@@ -149,6 +114,6 @@ class Lexer {
 				functions.push(rule.func);
 			}
 		}
-		return new Ruleset(new LexEngine(cases).firstState(),functions,eofFunction);
+		return new Ruleset(new LexEngine(cases).firstState(), functions, eofFunction);
 	}
 }

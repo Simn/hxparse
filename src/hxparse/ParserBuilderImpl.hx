@@ -58,8 +58,6 @@ class ParserBuilderImpl {
 		}
 	}
 	
-	static var fcount = 0;
-	
 	static function transformCases(needVal:Bool, cl:Array<Case>) {
 		var groups = [];
 		var group = [];
@@ -130,7 +128,7 @@ class ParserBuilderImpl {
 	static function makePattern(pat:Expr, e:Expr, def:Expr) {
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
-				if (def == unexpected) {
+				if (def == unexpected || def == noMatch) {
 					macro {
 						var $s = $e2;
 						$e;
@@ -139,11 +137,14 @@ class ParserBuilderImpl {
 					buildExtractor(pat, e, e2, s, def);
 				}
 			case EBinop(OpBoolAnd, e1, e2):
-				macro @:pos(pat.pos) switch peek(0) {
-					case $e1 if ($e2):
-						junk();
-						$e;
-					case _: $def;
+				macro @:pos(pat.pos) {
+					function def() return $def;
+					switch peek(0) {
+						case $e1 if ($e2):
+							junk();
+							$e;
+						case _: def();
+					}
 				}
 			case EBinop(OpBoolOr, e1, e2):
 				makePattern(e1, e, macro throw stream.curPos() + ": " +$e2);
@@ -158,32 +159,12 @@ class ParserBuilderImpl {
 	}
 	
 	static function buildExtractor(pat, e, e2, s, def) {
-		return if (Context.defined("flash9")) {
-			var name = "__result";
-			macro @:pos(pat.pos) {
-				var $name;
-				try {
-					var __temp = $e2;
-					$i{name} = hxparse.Parser.Either.Left(__temp);
-				} catch (_:hxparse.Parser.NoMatch<Dynamic>) {
-					var __temp = $def;
-					$i{name} = hxparse.Parser.Either.Right(__temp);
-				}
-				switch($i{name}) {
-					case hxparse.Parser.Either.Left($i{s}):
-						$e;
-					case hxparse.Parser.Either.Right(def):
-						def;
-				}
-			}
-		} else {
-			macro @:pos(pat.pos) {
-				try {
-					var $s = $e2;
-					$e;
-				} catch (_:hxparse.Parser.NoMatch<Dynamic>) {
-					$def;
-				}
+		return macro @:pos(pat.pos) {
+			try {
+				var $s = $e2;
+				$e;
+			} catch (_:hxparse.NoMatch<Dynamic>) {
+				$def;
 			}
 		}
 	}

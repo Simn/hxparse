@@ -11,6 +11,12 @@ enum MyEnum {
 extern class HelloWorld {
 	public function test();
 	public function test2(s:String) {
+		var exp = ~/.+/g;
+		#if (true && js)
+		trace("true");
+		#else
+		trace("false");
+		#end
 		trace("foo");
 		var x = 1 + 3;
 	}

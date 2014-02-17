@@ -4,6 +4,7 @@ import hxparse.Lexer;
 
 enum LexerErrorMsg {
 	UnterminatedString;
+	UnterminatedRegExp;
 	UnclosedComment;
 }
 
@@ -18,7 +19,7 @@ class LexerError {
 
 class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 
-	static inline function mkPos(p:hxparse.Position) {
+	static function mkPos(p:hxparse.Position) {
 		return {
 			file: p.psource,
 			min: p.pmin,
@@ -99,19 +100,29 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 			buf = new StringBuf();
 			var pmin = lexer.curPos();
 			var pmax = try lexer.token(string) catch (e:haxe.io.Eof) throw new LexerError(UnterminatedString, mkPos(pmin));
-			mk(lexer, Const(CString(buf.toString())));
+			var token = mk(lexer, Const(CString(buf.toString())));
+			token.pos.min = pmin.pmin; token;
 		},
 		"'" => {
 			buf = new StringBuf();
 			var pmin = lexer.curPos();
 			var pmax = try lexer.token(string2) catch (e:haxe.io.Eof) throw new LexerError(UnterminatedString, mkPos(pmin));
-			mk(lexer, Const(CString(buf.toString())));
+			var token = mk(lexer, Const(CString(buf.toString())));
+			token.pos.min = pmin.pmin; token;
+		},
+		'~/' => {
+			buf = new StringBuf();
+			var pmin = lexer.curPos();
+			var info = try lexer.token(regexp) catch (e:haxe.io.Eof) throw new LexerError(UnterminatedRegExp, mkPos(pmin));
+			var token = mk(lexer, Const(CRegexp(buf.toString(), info.opt)));
+			token.pos.min = pmin.pmin; token;
 		},
 		'/\\*' => {
 			buf = new StringBuf();
 			var pmin = lexer.curPos();
 			var pmax = try lexer.token(comment) catch (e:haxe.io.Eof) throw new LexerError(UnclosedComment, mkPos(pmin));
-			mk(lexer, Comment(buf.toString()));
+			var token = mk(lexer, Comment(buf.toString()));
+			token.pos.min = pmin.pmin; token;
 		},
 		"#" + ident => mk(lexer, Sharp(lexer.current.substr(1))),
 		"$" + ident => mk(lexer, Dollar(lexer.current.substr(1))),
@@ -190,6 +201,46 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 		"[^\\*]" => {
 			buf.add(lexer.current);
 			lexer.token(comment);
+		}
+	];
+
+	public static var regexp = @:rule [
+		"\\\\/" => {
+			buf.add("/");
+			lexer.token(regexp);
+		},
+		"\\\\r" => {
+			buf.add("\r");
+			lexer.token(regexp);
+		},
+		"\\\\n" => {
+			buf.add("\n");
+			lexer.token(regexp);
+		},
+		"\\\\t" => {
+			buf.add("\t");
+			lexer.token(regexp);
+		},
+		"\\\\[\\$\\.*+\\^|{}\\[\\]()?\\-0-9]" => {
+			buf.add(lexer.current);
+			lexer.token(regexp);
+		},
+		"\\\\[wWbBsSdDx]" => {
+			buf.add(lexer.current);
+			lexer.token(regexp);
+		},
+		"/" => {
+			lexer.token(regexp_options);
+		},
+		"[^\\\\/\r\n]+" => {
+			buf.add(lexer.current);
+			lexer.token(regexp);
+		}
+	];
+
+	public static var regexp_options = @:rule [
+		"[gimsu]*" => {
+			{ pmax:lexer.curPos().pmax, opt:lexer.current };
 		}
 	];
 }

@@ -10,7 +10,7 @@ package hxparse;
 	Multiple patterns can then be passed to the constructor to generate the
 	state machine, which is obtainable from the `firstState` method.
 **/
-class LexEngine<T> {
+class LexEngine {
 	
 	var uid : Int;
 	var nodes : Array<Node>;
@@ -239,7 +239,7 @@ class LexEngine<T> {
 		return p.pattern;
 	}
 	
-	inline static function next( a, b ) {
+	static function next( a, b ) {
 		return a == Empty ? b : Next(a, b);
 	}
 	
@@ -387,6 +387,19 @@ class LexEngine<T> {
 			case '\\'.code:
 				c = StringTools.fastCodeAt(pattern, i++);
 				if ( StringTools.isEof(c) ) c = '\\'.code;
+				else if (c >= "0".code && c <= "9".code) {
+					var v = c - 48;
+					while(true) {
+						var cNext = StringTools.fastCodeAt(pattern, i);
+						if (cNext >= "0".code && cNext <= "9".code) {
+							v = v * 10 + (cNext - 48);
+							++i;
+						} else {
+							break;
+						}
+					}
+					c = v;
+				}
 				r = next(r, Match(single(c)));
 			default:
 				r = next(r, Match(single(c)));
