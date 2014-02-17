@@ -113,8 +113,8 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 		'~/' => {
 			buf = new StringBuf();
 			var pmin = lexer.curPos();
-			var pmax = try lexer.token(regexp) catch (e:haxe.io.Eof) throw new LexerError(UnterminatedRegExp, mkPos(pmin));
-			var token = mk(lexer, Const(CRegexp(buf.toString(),'')));
+			var info = try lexer.token(regexp) catch (e:haxe.io.Eof) throw new LexerError(UnterminatedRegExp, mkPos(pmin));
+			var token = mk(lexer, Const(CRegexp(buf.toString(), info.opt)));
 			token.pos.min = pmin.pmin; token;
 		},
 		'/\\*' => {
@@ -231,7 +231,6 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 		},
 		"/" => {
 			lexer.token(regexp_options);
-			lexer.curPos().pmax;
 		},
 		"[^\\\\/\r\n]+" => {
 			buf.add(lexer.current);
@@ -241,8 +240,7 @@ class HaxeLexer extends Lexer implements hxparse.RuleBuilder {
 
 	public static var regexp_options = @:rule [
 		"[gimsu]*" => {
-			buf.add(lexer.current);
-			lexer.curPos().pmax;
+			{ pmax:lexer.curPos().pmax, opt:lexer.current };
 		}
 	];
 }

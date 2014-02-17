@@ -11,6 +11,7 @@ enum MyEnum {
 extern class HelloWorld {
 	public function test();
 	public function test2(s:String) {
+		var exp = ~/.+/g;
 		trace("foo");
 		var x = 1 + 3;
 	}
