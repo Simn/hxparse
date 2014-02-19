@@ -15,32 +15,215 @@ typedef ParserError = {
 	pos: hxparse.Position
 }
 
+enum SmallType {
+	SNull;
+	SBool(b:Bool);
+	SFloat(f:Float);
+	SString(s:String);
+}
+
 class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.ParserBuilder {
 
+	var defines:Map<String, Dynamic>;
+
+	var mstack:Array<Position>;
 	var doResume = false;
 	var doc:String;
 	var inMacro:Bool;
 	
 	public function new(input:byte.ByteData, sourceName:String) {
 		super(new HaxeLexer(input, sourceName), HaxeLexer.tok);
+		mstack = [];
+		defines = new Map();
+		defines.set("true", true);
 		inMacro = false;
 		doc = "";
+	}
+
+	public function define(flag:String, ?value:Dynamic)
+	{
+		defines.set(flag, value);
 	}
 
 	public function parse() {
 		return parseFile();
 	}
 	
-	override function peek(n) {
+	override function peek(n):Token {
 		return if (n == 0)
-			switch(super.peek(0)) {
-				case {tok:CommentLine(_) | Sharp("end" | "else" | "elseif" | "if" | "error" | "line")}:
+		{
+			var tk = super.peek(0);
+			switch tk {
+				case {tok:CommentLine(_) | Sharp("error" | "line")}:
+					next();
+				case {tok:Sharp("end")}:
 					junk();
-					peek(0);
+					if (mstack.length == 0) tk;
+					else
+					{
+						mstack.shift();
+						peek(0);
+					}
+				case {tok:Sharp("else" | "elseif")}:
+					junk();
+					if (mstack.length == 0) tk;
+					else
+					{
+						mstack.shift();
+						skipTokens(tk.pos, false);
+					}
+				case {tok:Sharp("if")}:
+					junk();
+					enterMacro(tk.pos);
 				case t: t;
 			}
-		else
-			super.peek(n);
+		}
+		else super.peek(n);
+	}
+
+	function keywordString(k:Keyword)
+	{
+		return Std.string(k).substr(3).toLowerCase();
+	}
+
+	function parseMacroCond(allowOp:Bool):{tk:Option<Token>, expr:Expr}
+	{
+		return switch stream {
+			case [{tok:Const(CIdent(t)), pos:p}]:
+				parseMacroIdent(allowOp, t, p);
+			case [{tok:Const(CString(s)), pos:p}]:
+				{tk:None, expr:{expr:EConst(CString(s)), pos:p}};
+			case [{tok:Const(CInt(s)), pos:p}]:
+				{tk:None, expr:{expr:EConst(CInt(s)), pos:p}};
+			case [{tok:Const(CFloat(s)), pos:p}]:
+				{tk:None, expr:{expr:EConst(CFloat(s)), pos:p}};
+			case [{tok:Kwd(k), pos:p}]:
+				parseMacroIdent(allowOp, keywordString(k), p);
+			case [{tok:POpen, pos:p1}, o = parseMacroCond(true), {tok:PClose, pos:p2}]:
+				var e = {expr:EParenthesis(o.expr), pos:punion(p1, p2)};
+				if (allowOp) parseMacroOp(e) else { tk:None, expr:e };
+			case [{tok:Unop(op), pos:p}, o = parseMacroCond(allowOp)]:
+				{tk:o.tk, expr:makeUnop(op, o.expr, p)};
+		}
+	}
+
+	function parseMacroIdent(allowOp:Bool, t:String, p:Position):{tk:Option<Token>, expr:Expr}
+	{
+		var e = {expr:EConst(CIdent(t)), pos:p};
+		return if (!allowOp) { tk:None, expr:e } else parseMacroOp(e);
+	}
+
+	function parseMacroOp(e:Expr):{tk:Option<Token>, expr:Expr}
+	{
+		return switch peek(0) {
+			case {tok:Binop(op)}:
+				junk();
+				op = switch peek(0) {
+					case {tok:Binop(OpAssign)} if (op == OpGt):
+						junk();
+						OpGte;
+					case _: op;
+				}
+				var o = parseMacroCond(true);
+				{tk:o.tk, expr:makeBinop(op, e, o.expr)};
+			case tk:
+				{tk:Some(tk), expr:e};
+		}
+	}
+
+	function enterMacro(p)
+	{
+		var o = parseMacroCond(false);
+		var tk = switch o.tk {
+			case None: peek(0);
+			case Some(tk): tk;
+		}
+		return if (isTrue(eval(o.expr))) tk;
+		else skipTokensLoop(p, true, tk);
+	}
+
+	function next()
+	{
+		var tk = super.peek(0);
+		junk();
+		return tk;
+	}
+
+	function skipTokens(p, test)
+	{
+		return skipTokensLoop(p, test, next());
+	}
+
+	function skipTokensLoop(p:Position, test, tk:Token)
+	{
+		return switch tk {
+			case {tok:Sharp("end")}:
+				peek(0);
+			case {tok:Sharp("elseif" | "else")} if (!test):
+				skipTokens(p, test);
+			case {tok:Sharp("else")}:
+				mstack.unshift(tk.pos);
+				next();
+			case {tok:Sharp("elseif")}:
+				enterMacro(tk.pos);
+			case {tok:Sharp("if")}:
+				skipTokensLoop(p, test, skipTokens(p, false));
+			case {tok:Eof}:
+				throw "unclosed macro";
+			case _:
+				skipTokens(p, test);
+		}
+	}
+
+	function isTrue(a:SmallType)
+	{
+		return switch a {
+			case SBool(false), SNull, SFloat(0.0), SString(""): false;
+			case _: true;
+		}
+	}
+
+	function compare(a:SmallType, b:SmallType)
+	{
+		return switch [a, b] {
+			case [SNull, SNull]: 0;
+			case [SFloat(a), SFloat(b)]: Reflect.compare(a, b);
+			case [SString(a), SString(b)]: Reflect.compare(a, b);
+			case [SBool(a), SBool(b)]: Reflect.compare(a, b);
+			case [SString(a), SFloat(b)]: Reflect.compare(Std.parseFloat(a), b);
+			case [SFloat(a), SString(b)]: Reflect.compare(a, Std.parseFloat(b));
+			case _: 0;
+		}
+	}
+
+	function eval(e:Expr)
+	{
+		return switch (e.expr)
+		{
+			case EConst(CIdent(s)): defines.exists(s) ? SString(s) : SNull;
+			case EConst(CString(s)): SString(s);
+			case EConst(CInt(f)), EConst(CFloat(f)): SFloat(Std.parseFloat(f));
+			case EBinop(OpBoolAnd, e1, e2): SBool(isTrue(eval(e1)) && isTrue(eval(e2)));
+			case EBinop(OpBoolOr, e1, e2): SBool(isTrue(eval(e1)) || isTrue(eval(e2)));
+			case EUnop(OpNot, _, e): SBool(!isTrue(eval(e)));
+			case EParenthesis(e): eval(e);
+			case EBinop(op, e1, e2):
+				var v1 = eval(e1);
+				var v2 = eval(e2);
+				var cmp = compare(v1, v2);
+				var val = switch (op)
+				{
+					case OpEq: cmp == 0;
+					case OpNotEq: cmp != 0;
+					case OpGt: cmp > 0;
+					case OpGte: cmp >= 0;
+					case OpLt: cmp < 0;
+					case OpLte: cmp <= 0;
+					case _: throw "Unsupported operation";
+				}
+				SBool(val);
+			case _: throw "Invalid condition expression";
+		}
 	}
 
 	static function punion(p1:Position, p2:Position) {
