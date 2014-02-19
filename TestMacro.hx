@@ -4,6 +4,15 @@ class TestMacro
 	{
 		#if false
 		"#if false";
+		#elseif js
+		"ELSEIF";
+			#if true
+			"SUBYUP";
+			#else
+			"SUBNOPE"
+			#end
+		#else
+		"ELSEELSEELSE";
 		#end
 		
 		#if !js
