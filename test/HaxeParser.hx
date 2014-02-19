@@ -138,7 +138,11 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 			case None: peek(0);
 			case Some(tk): tk;
 		}
-		return if (isTrue(eval(o.expr))) tk;
+		return if (isTrue(eval(o.expr)))
+		{
+			mstack.unshift(p);
+			tk;
+		}
 		else skipTokensLoop(p, true, tk);
 	}
 
@@ -149,12 +153,12 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 		return tk;
 	}
 
-	function skipTokens(p, test)
+	function skipTokens(p:Position, test:Bool)
 	{
 		return skipTokensLoop(p, test, next());
 	}
 
-	function skipTokensLoop(p:Position, test, tk:Token)
+	function skipTokensLoop(p:Position, test:Bool, tk:Token)
 	{
 		return switch tk {
 			case {tok:Sharp("end")}:
@@ -163,7 +167,7 @@ class HaxeParser extends hxparse.Parser<HaxeLexer, Token> implements hxparse.Par
 				skipTokens(p, test);
 			case {tok:Sharp("else")}:
 				mstack.unshift(tk.pos);
-				next();
+				peek(0);
 			case {tok:Sharp("elseif")}:
 				enterMacro(tk.pos);
 			case {tok:Sharp("if")}:
