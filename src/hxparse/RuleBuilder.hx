@@ -54,7 +54,7 @@ class RuleBuilderImpl {
 		return switch(rule.expr) {
 			case EConst(CString(s)): s;
 			case EConst(CIdent(i)): makeRule(fields, fields.get(i));
-			case EBinop(OpAdd,e1,e2): makeRule(fields, e1) + makeRule(fields, e2);
+			case EBinop(OpAdd,e1,e2): "(" + makeRule(fields, e1) +")(" + makeRule(fields, e2) +")";
 			case _: Context.error("Invalid rule", rule.pos);
 		}
 	}
