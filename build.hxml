@@ -2,7 +2,6 @@
 -cp test
 -main Test
 -dce full
--resource TestClass.hx@HaxeFile
 --each
 
 -xml bin/hxparse.xml
