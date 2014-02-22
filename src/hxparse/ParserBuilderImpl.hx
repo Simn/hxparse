@@ -129,8 +129,9 @@ class ParserBuilderImpl {
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
 				if (def == unexpected || def == noMatch) {
+					var e1 = s == "_" ? e2 : macro var $s = $e2;
 					macro {
-						var $s = $e2;
+						$e1;
 						$e;
 					}
 				} else {
@@ -159,9 +160,10 @@ class ParserBuilderImpl {
 	}
 	
 	static function buildExtractor(pat, e, e2, s, def) {
+		var e1 = s == "_" ? e2 : macro var $s = $e2;
 		return macro @:pos(pat.pos) {
 			try {
-				var $s = $e2;
+				$e1;
 				$e;
 			} catch (_:hxparse.NoMatch<Dynamic>) {
 				$def;
