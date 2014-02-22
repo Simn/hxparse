@@ -35,12 +35,7 @@ class Position {
 		return '$psource:characters $pmin-$pmax';
 	}
 	
-	/**
-		Formats `this` position by resolving line numbers within `input`.
-		
-		If `input` is null, the result is unspecified.
-	**/
-	public function format(input:byte.ByteData) {
+	public function getLinePosition(input:byte.ByteData) {
 		var lineMin = 1;
 		var lineMax = 1;
 		var posMin = 0;
@@ -64,10 +59,25 @@ class Position {
 			cur++;
 		}
 		posMax = cur - posMax;
-		if (lineMin != lineMax) {
-			return '${psource}:lines $lineMin-$lineMax';
+		return {
+			lineMin: lineMin,
+			lineMax: lineMax,
+			posMin: posMin,
+			posMax: posMax
+		}
+	}
+	
+	/**
+		Formats `this` position by resolving line numbers within `input`.
+		
+		If `input` is null, the result is unspecified.
+	**/
+	public function format(input:byte.ByteData) {
+		var linePos = getLinePosition(input);
+		if (linePos.lineMin != linePos.lineMax) {
+			return '${psource}:lines ${linePos.lineMin}-${linePos.lineMax}';
 		} else {
-			return '${psource}:line $lineMin:characters $posMin-$posMax';
+			return '${psource}:line ${linePos.lineMin}:characters ${linePos.posMin}-${linePos.posMax}';
 		}
 	}
 	
@@ -82,4 +92,11 @@ class Position {
 	static public function union(p1:Position, p2:Position) {
 		return new Position(p1.psource, p1.pmin < p2.pmin ? p1.pmin : p2.pmin, p1.pmax > p2.pmax ? p1.pmax : p2.pmax);
 	}
+}
+
+private typedef Position2 = {
+	lineMin: Int,
+	lineMax: Int,
+	posMin: Int,
+	posMax: Int
 }
