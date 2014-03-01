@@ -345,6 +345,8 @@ class LexEngine {
 			case '|'.code if (r != Empty):
 				var r2 = parseInner(pattern, i);
 				return {pattern: Choice(r, r2.pattern), pos: r2.pos};
+			case '.'.code:
+				r = next(r, Match(ALL_CHARS));
 			case '('.code:
 				var r2 = parseInner(pattern, i, pDepth + 1);
 				i = r2.pos;
