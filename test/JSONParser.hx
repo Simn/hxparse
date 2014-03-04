@@ -27,7 +27,7 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 		"[" => TBkOpen,
 		"]" => TBkClose,
 		"-" => TDash,
-		"." => TDot,
+		"\\." => TDot,
 		"true" => TTrue,
 		"false" => TFalse,
 		"null" => TNull,

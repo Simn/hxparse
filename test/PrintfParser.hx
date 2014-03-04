@@ -45,7 +45,7 @@ class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 		"+" => Flag(Plus),
 		"-" => Flag(Minus),
 		"[1-9][0-9]*" => Number(Std.parseInt(lexer.current)),
-		"." => Dot,
+		"\\." => Dot,
 		"i" => Value(VInt),
 		"f" => Value(VFloat),
 		"s" => Value(VString),
