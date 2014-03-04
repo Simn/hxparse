@@ -65,12 +65,66 @@ class Parser<S:TokenSource<Token>, Token> {
 		last = token.elt;
 		token = token.next;
 	}
-	
+		
 	/**
 		Returns the current lexer position.
 	**/
+	@:doc
 	public inline function curPos() {
 		return stream.curPos();
+	}
+	
+	/**
+		Invokes `f` and then `separatorFunc` with the current token until the
+		result of that call is `false`.
+		
+		The result is an Array containing the results of all calls to `f`.
+		
+		A typical use case is parsing function arguments which are separated by
+		a comma.
+	 */
+	@:doc
+	function parseSeparated<T>(separatorFunc:Token->Bool, f:Void->T):Array<T> {
+		var acc = [];
+		while(true) {
+			acc.push(f());
+			if (separatorFunc(peek(0))) {
+				junk();
+			} else {
+				break;
+			}
+		}
+		return acc;
+	}
+	
+	/**
+		Returns the result of calling `f()` if a match is made, or `null`
+		otherwise`.
+	**/
+	@:doc
+	function parseOptional<T>(f:Void->T) {
+		try {
+			return f();
+		} catch(e:hxparse.NoMatch<Dynamic>) {
+			return null;
+		}
+	}
+	
+	/**
+		Calls `f` until no match can be made.
+		
+		The result is an Array containing the results of all calls to `f`.
+	**/
+	@:doc
+	function parseRepeat<T>(f:Void->T) {
+		var acc = [];
+		while(true) {
+			try {
+				acc.push(f());
+			} catch(e:hxparse.NoMatch<Dynamic>) {
+				return acc;
+			}
+		}
 	}
 	
 	inline function noMatch() {
