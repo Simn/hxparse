@@ -40,7 +40,7 @@ class Parser<S:TokenSource<Token>, Token> {
 	/**
 		Returns the `n`th token without consuming it.
 	**/
-	@:doc
+	@:dox(show)
 	function peek(n:Int):Token {
 		if (token == null) {
 			token = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(ruleset), null);
@@ -60,7 +60,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		
 		This method is automatically called after a successful match.
 	**/
-	@:doc
+	@:dox(show)
 	inline function junk() {
 		last = token.elt;
 		token = token.next;
@@ -69,7 +69,7 @@ class Parser<S:TokenSource<Token>, Token> {
 	/**
 		Returns the current lexer position.
 	**/
-	@:doc
+	@:dox(show)
 	public inline function curPos() {
 		return stream.curPos();
 	}
@@ -83,7 +83,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		A typical use case is parsing function arguments which are separated by
 		a comma.
 	**/
-	@:doc
+	@:dox(show)
 	function parseSeparated<T>(separatorFunc:Token->Bool, f:Void->T):Array<T> {
 		var acc = [];
 		while(true) {
@@ -101,7 +101,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		Returns the result of calling `f()` if a match is made, or `null`
 		otherwise`.
 	**/
-	@:doc
+	@:dox(show)
 	function parseOptional<T>(f:Void->T) {
 		try {
 			return f();
@@ -115,7 +115,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		
 		The result is an Array containing the results of all calls to `f`.
 	**/
-	@:doc
+	@:dox(show)
 	function parseRepeat<T>(f:Void->T) {
 		var acc = [];
 		while(true) {
