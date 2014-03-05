@@ -1,9 +1,9 @@
 {
   "name": "hxparse",
   "url": "https://github.com/Simn/hxparse",
-  "license": "BSD",
+  "license": "MIT",
   "description": "This library provides tools for creating lexers and parsers in haxe.",
-  "version": "2.0.0",
-  "releasenote": "restructured",
+  "version": "3.0.0",
+  "releasenote": "Update to Haxe 3.1.0",
   "contributors": ["Simn"]
 }
