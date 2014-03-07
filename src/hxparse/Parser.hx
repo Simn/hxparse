@@ -82,7 +82,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		
 		A typical use case is parsing function arguments which are separated by
 		a comma.
-	 */
+	**/
 	@:doc
 	function parseSeparated<T>(separatorFunc:Token->Bool, f:Void->T):Array<T> {
 		var acc = [];
