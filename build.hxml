@@ -4,6 +4,7 @@
 -dce full
 --each
 
+-dce std
 -xml bin/hxparse.xml
 
 --next
