@@ -24,7 +24,7 @@ class LexerGraph<T> {
 	
 	function new(ruleset:Ruleset<T>) {
 		this.ruleset = ruleset;
-		this.graph = new Graph([RankDir(Lr)], false);
+		this.graph = new Graph([RankDir(Lr)], true);
 		map = new Map();
 		processState(ruleset.state);
 	}
