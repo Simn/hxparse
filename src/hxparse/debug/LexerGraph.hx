@@ -102,7 +102,7 @@ class LexerGraph<T> {
 	}
 	
 	function printCode(i:Int) {
-		if (i >= 32) {
+		if (i >= 32 && i <= 0x7F) {
 			return switch (i) {
 				case '"'.code: '\\"';
 				case '\\'.code: '\\\\';
