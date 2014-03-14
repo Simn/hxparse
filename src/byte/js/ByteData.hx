@@ -1,6 +1,6 @@
 package byte.js;
 
-typedef NativeByteRepresentation = js.html.Int8Array;
+typedef NativeByteRepresentation = js.html.Uint8Array;
 
 abstract ByteData(NativeByteRepresentation) {
 	
@@ -35,12 +35,12 @@ abstract ByteData(NativeByteRepresentation) {
 	}
 	
 	static public function alloc(length:Int):ByteData {
-		var b = new js.html.Int8Array(length);
+		var b = new js.html.Uint8Array(length);
 		return new ByteData(b);
 	}
 		
 	static public function ofString(s:String):ByteData {
-		var a = new js.html.Int8Array(s.length);
+		var a = new js.html.Uint8Array(s.length);
 		for(i in 0...s.length) a[i] = StringTools.fastCodeAt(s, i);
 		return new ByteData(a);
 	}
