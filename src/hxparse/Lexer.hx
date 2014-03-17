@@ -72,6 +72,11 @@ class Lexer {
 		var lastMatch = null;
 		var lastMatchPos = pos;
 		var start = pos;
+		
+		#if expose_lexer_state
+		stateCallback(state, pos, -1);
+		#end
+		
 		while(true) {
 			if (state.final > -1) {
 				lastMatch = state;
@@ -84,6 +89,11 @@ class Lexer {
 			var i = input.readByte(pos);
 			pos++;
 			state = state.trans.get(i);
+			
+			#if expose_lexer_state
+			stateCallback(state, pos-1, i);
+			#end
+			
 			if (state == null)
 				break;
 		}
@@ -93,6 +103,16 @@ class Lexer {
 			throw new UnexpectedChar(String.fromCharCode(input.readByte(pos)), curPos());
 		return ruleset.functions[lastMatch.final](this);
 	}
+	
+	#if expose_lexer_state
+	/**
+		
+		@param	state	`null` if it's the last state visited
+		@param	position	Position of the byte read
+		@param	input	Transition input byte, `-1` if initial state
+	**/
+	dynamic public function stateCallback(state:State, position:Int, input:Int) {}
+	#end
 	
 	/**
 		Builds a `Ruleset` from the given `rules` `Array`.
