@@ -65,20 +65,6 @@ class RuleBuilderImpl {
 			}), macro $a{ruleIdents}),
 			pos: Context.currentPos()
 		});
-		var ruleStrings = [for (rv in rules) macro $v{rv}];
-		ret.push( {
-			name: "generatedRulesetNames",
-			access: [APublic, AStatic],
-			kind: FVar(TPath({
-				name: "Array",
-				pack: [],
-				params: [TPType(TPath({
-					name: "String",
-					pack: []
-				}))]
-			}), macro $a{ruleStrings}),
-			pos: Context.currentPos()
-		});
 		return ret;
 	}
 	
@@ -112,7 +98,7 @@ class RuleBuilderImpl {
 			return loop(e);
 		});
 		var e = macro $a{el};
-		var e = macro hxparse.Lexer.buildRuleset($e);
+		var e = macro hxparse.Lexer.buildRuleset($e, $v{field.name});
 		field.kind = FVar(null, e);
 		return e;
 	}

@@ -22,11 +22,17 @@ class Ruleset<Token> {
 	public var eofFunction:Lexer->Token;
 	
 	/**
+		Informative name for the state, if any. Generated automatically from field name by RuleBuilder if @:rule is used.
+	**/
+	public var name:String;
+	
+	/**
 		Creates a new Ruleset.
 	**/
-	public function new(state, functions, eofFunction) {
+	public function new(state, functions, eofFunction, name = "") {
 		this.state = state;
 		this.functions = functions;
 		this.eofFunction = eofFunction;
+		this.name = name;
 	}
 }
