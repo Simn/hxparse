@@ -21,7 +21,6 @@ class Lexer {
 	var input:byte.ByteData;
 	var source:String;
 	var pos:Int;
-	var eof(default, null):Bool;
 	
 	/**
 		Creates a new Lexer for `input`.
@@ -36,7 +35,6 @@ class Lexer {
 		this.input = input;
 		source = sourceName;
 		pos = 0;
-		eof = false;
 	}
 	
 	/**
@@ -64,7 +62,7 @@ class Lexer {
 		If `ruleset` is null, the result is unspecified.
 	**/
 	public function token<T>(ruleset:Ruleset<T>):T {
-		if (eof) {
+		if (pos == input.length) {
 			if (ruleset.eofFunction != null) return ruleset.eofFunction(this);
 			else throw new haxe.io.Eof();
 		}
@@ -83,7 +81,6 @@ class Lexer {
 				lastMatchPos = pos;
 			}
 			if (pos == input.length) {
-				eof = true;
 				break;
 			}
 			var i = input.readByte(pos);
