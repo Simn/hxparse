@@ -39,7 +39,7 @@ class ArithmeticParser extends hxparse.Parser<ArithmeticLexer, ArithmeticToken> 
 			case [TNumber(f)]:
 				parseNext(ENumber(f));
 			case [TPOpen, e = parse(), TPClose]:
-				EParenthesis(parseNext(e));
+				parseNext(EParenthesis(e));
 		}
 	}
 

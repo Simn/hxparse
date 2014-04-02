@@ -34,6 +34,7 @@ class Test {
 		eq(1.5, "3 / 2");
 		eq(10, "2 * 3 + 4");
 		eq(14, "2 * (3 + 4)");
+		eq(18, "9 + (3 * 4) - 3 / (1 * 1)");
 		trace('Done $numTests tests');
 	}
 }
