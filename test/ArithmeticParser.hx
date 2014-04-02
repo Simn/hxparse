@@ -17,6 +17,7 @@ enum ArithmeticExpr {
 	ENumber(f:Float);
 	EBinop(op:ArithmeticBinop, e1:ArithmeticExpr, e2:ArithmeticExpr);
 	EParenthesis(e:ArithmeticExpr);
+	ENeg(e:ArithmeticExpr);
 }
 
 class ArithmeticLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
@@ -40,6 +41,8 @@ class ArithmeticParser extends hxparse.Parser<ArithmeticLexer, ArithmeticToken> 
 				parseNext(ENumber(f));
 			case [TPOpen, e = parse(), TPClose]:
 				parseNext(EParenthesis(e));
+			case [TBinop(OpSub), e = parse()]:
+				parseNext(ENeg(e));
 		}
 	}
 
@@ -81,6 +84,8 @@ class ArithmeticEvaluator {
 				}
 			case EParenthesis(e1):
 				eval(e1);
+			case ENeg(e1):
+				-eval(e1);
 		}
 	}
 }
