@@ -21,12 +21,14 @@ class RuleBuilderImpl {
 		var fieldExprs = new Map();
 		var delays = [];
 		var ret = [];
+		var rules = [];
 		for (field in fields) {
 			if (field.access.exists(function(a) return a == AStatic))
 				switch(field.kind) {
 					case FVar(t, e) if (e != null):
 						switch(e.expr) {
 							case EMeta({name: ":rule"}, e):
+								rules.push(field.name);
 								delays.push(transformRule.bind(field, e, t, fieldExprs));
 							case EMeta({name: ":mapping", params: args}, e):
 								var offset = switch(args) {
@@ -45,6 +47,24 @@ class RuleBuilderImpl {
 		}
 		for (delay in delays)
 			delay();
+		var ruleIdents = [for (rv in rules) macro $i{rv}];
+		ret.push( {
+			name: "generatedRulesets",
+			access: [APublic, AStatic],
+			kind: FVar(TPath({
+				name: "Array",
+				pack: [],
+				params: [TPType(TPath({
+					name: "Ruleset",
+					pack: ["hxparse"],
+					params: [TPType(TPath( {
+						name: "Dynamic",
+						pack: []
+					}))]
+				}))]
+			}), macro $a{ruleIdents}),
+			pos: Context.currentPos()
+		});
 		return ret;
 	}
 	
@@ -78,7 +98,7 @@ class RuleBuilderImpl {
 			return loop(e);
 		});
 		var e = macro $a{el};
-		var e = macro hxparse.Lexer.buildRuleset($e);
+		var e = macro hxparse.Lexer.buildRuleset($e, $v{field.name});
 		field.kind = FVar(null, e);
 		return e;
 	}

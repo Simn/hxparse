@@ -119,7 +119,7 @@ class Lexer {
 		
 		If `rules` is null, the result is unspecified.
 	**/
-	static public function buildRuleset<Token>(rules:Array<{rule:String,func:Lexer->Token}>) {
+	static public function buildRuleset<Token>(rules:Array<{rule:String,func:Lexer->Token}>, name:String = "") {
 		var cases = [];
 		var functions = [];
 		var eofFunction = null;
@@ -131,6 +131,6 @@ class Lexer {
 				functions.push(rule.func);
 			}
 		}
-		return new Ruleset(new LexEngine(cases).firstState(), functions, eofFunction);
+		return new Ruleset(new LexEngine(cases).firstState(), functions, eofFunction, name);
 	}
 }
