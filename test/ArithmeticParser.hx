@@ -1,3 +1,5 @@
+import hxparse.TokenSource.LexerTokenSource;
+
 enum ArithmeticBinop {
 	OpAdd;
 	OpSub;
@@ -34,7 +36,7 @@ class ArithmeticLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class ArithmeticParser extends hxparse.Parser<ArithmeticLexer, ArithmeticToken> implements hxparse.ParserBuilder {
+class ArithmeticParser extends hxparse.Parser<LexerTokenSource<ArithmeticToken>, ArithmeticToken> implements hxparse.ParserBuilder {
 	public function parse() {
 		return switch stream {
 			case [TNumber(f)]:

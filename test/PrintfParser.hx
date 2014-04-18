@@ -1,3 +1,5 @@
+import hxparse.TokenSource.LexerTokenSource;
+
 enum PToken {
 	Eof;
 	Placeholder;
@@ -53,19 +55,21 @@ class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class PrintfParser extends hxparse.Parser<PrintfLexer, PToken> implements hxparse.ParserBuilder {
+class PrintfParser extends hxparse.Parser<LexerTokenSource<PToken>, PToken> implements hxparse.ParserBuilder {
 	public function new(input:byte.ByteData) {
-		super(new PrintfLexer(input), PrintfLexer.tok);
+		var lexer = new PrintfLexer(input);
+		var ts = new LexerTokenSource(lexer, PrintfLexer.tok);
+		super(ts);
 	}
 	
 	public function parse() {
 		var v:Fmt<Dynamic,Dynamic> = switch stream {
 			case [Literal(s)]: Lit(s);
 			case [Placeholder]:
-				var current = ruleset;
-				ruleset = PrintfLexer.placeholder;
+				var current = stream.ruleset;
+				stream.ruleset = PrintfLexer.placeholder;
 				var r = parsePlaceholder();
-				ruleset = current;
+				stream.ruleset = current;
 				r;
 			case [Eof]: null;
 		}

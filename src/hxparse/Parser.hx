@@ -10,15 +10,6 @@ package hxparse;
 class Parser<S:TokenSource<Token>, Token> {
 
 	/**
-		The current `Ruleset`.
-		
-		This value is passed to the lexer when the `peek` method is invoked.
-		Changing it during parsing can thus modify the tokenizing behavior
-		of the lexer.
-	**/
-	public var ruleset(default, null):Ruleset<Token>;
-	
-	/**
 		Returns the last matched token.
 		
 		This is a convenience property for accessing `cache[offset - 1]`.
@@ -32,9 +23,8 @@ class Parser<S:TokenSource<Token>, Token> {
 		Creates a new Parser instance over `TokenSource` `stream` with the
 		initial `Ruleset` being `ruleset`.
 	**/
-	public function new(stream:S, ruleset:Ruleset<Token>) {
+	public function new(stream:S) {
 		this.stream = stream;
-		this.ruleset = ruleset;
 	}
 	
 	/**
@@ -43,12 +33,12 @@ class Parser<S:TokenSource<Token>, Token> {
 	@:dox(show)
 	function peek(n:Int):Token {
 		if (token == null) {
-			token = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(ruleset), null);
+			token = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(), null);
 			n--;
 		}
 		var tok = token;
 		while (n > 0) {
-			if (tok.next == null) tok.next = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(ruleset), null);
+			if (tok.next == null) tok.next = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(), null);
 			tok = tok.next;
 			n--;
 		}

@@ -1,3 +1,5 @@
+import hxparse.TokenSource.LexerTokenSource;
+
 private enum Token {
 	TBrOpen;
 	TBrClose;
@@ -72,9 +74,11 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class JSONParser extends hxparse.Parser<JSONLexer, Token> implements hxparse.ParserBuilder {
+class JSONParser extends hxparse.Parser<LexerTokenSource<Token>, Token> implements hxparse.ParserBuilder {
 	public function new(input:byte.ByteData, sourceName:String) {
-		super(new JSONLexer(input, sourceName), JSONLexer.tok);
+		var lexer = new JSONLexer(input, sourceName);
+		var ts = new LexerTokenSource(lexer, JSONLexer.tok);
+		super(ts);
 	}
 		
 	public function parse():Dynamic {
