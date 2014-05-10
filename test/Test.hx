@@ -21,7 +21,9 @@ class Test {
 		var numTests = 0;
 		function eq(f1:Float, s:String) {
 			++numTests;
-			var parser = new ArithmeticParser(new ArithmeticParser.ArithmeticLexer(byte.ByteData.ofString(s)), ArithmeticParser.ArithmeticLexer.tok);
+			var lexer = new ArithmeticParser.ArithmeticLexer(byte.ByteData.ofString(s));
+			var ts = new hxparse.TokenSource.LexerTokenSource(lexer, ArithmeticParser.ArithmeticLexer.tok);
+			var parser = new ArithmeticParser(ts);
 			var f2 = ArithmeticParser.ArithmeticEvaluator.eval(parser.parse());
 			if (f1 != f2) {
 				trace('$f2 should be $f2');
