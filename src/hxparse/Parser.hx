@@ -20,8 +20,7 @@ class Parser<S:TokenSource<Token>, Token> {
 	var token:haxe.ds.GenericStack.GenericCell<Token>;
 	
 	/**
-		Creates a new Parser instance over `TokenSource` `stream` with the
-		initial `Ruleset` being `ruleset`.
+		Creates a new Parser instance over `TokenSource` `stream`
 	**/
 	public function new(stream:S) {
 		this.stream = stream;

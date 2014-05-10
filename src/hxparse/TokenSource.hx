@@ -6,7 +6,7 @@ package hxparse;
 typedef TokenSource<Token> = {
 	
 	/**
-		Returns the next token according to the rules of `Ruleset` `r`.
+		Returns the next token
 	**/
 	function token():Token;
 	
