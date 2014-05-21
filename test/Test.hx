@@ -7,7 +7,7 @@ class Test {
 		trace(parser.parse());
 
 		// Using haxe.Utf8
-		var value = 'âêùあ𠀀';
+		var value = 'hello âê€𩸽ùあ𠀀ÊÀÁÂÃÄÅÆÇÈÉËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáãäåæçèéëìíîïðñòóôõöøúûüýþÿ№ unicode';
 		var lexer = new UnicodeTestLexer( byte.ByteData.ofString( value ), 'uft8-test' );
 		var tokens = [];
 

@@ -70,9 +70,65 @@ class RuleBuilderImpl {
 
 	#if macro
 
+	#if unifill
+
+	static function handleUnicode(s:String, p:Position) {
+		var uLength = unifill.Unifill.uLength(s);
+		if (uLength == s.length) {
+			return s;
+		}
+		var buf = new StringBuf();
+		var i = 0;
+		while (i < uLength) {
+			var c = unifill.Unifill.uCharAt(s, i);
+			++i;
+			switch (c) {
+				case '[':
+					buf.add("(");
+					var first = true;
+					while(true) {
+						var c = unifill.Unifill.uCharAt(s, i);
+						++i;
+						switch (c) {
+							case "]":
+								break;
+							case _:
+								if (!first) {
+									buf.add("|");
+								}
+								buf.add("(");
+								if (unifill.Unifill.uCharAt(s, i) == "-") {
+									buf.add("[");
+									buf.add(c);
+									buf.add("-");
+									++i;
+									c = unifill.Unifill.uCharAt(s, i);
+									if (c != String.fromCharCode(c.charCodeAt(0))) {
+										Context.error("Unicode ranges are not supported", p);
+									}
+									buf.add(c);
+									++i;
+									buf.add("]");
+								} else {
+									buf.add(c);
+								}
+								buf.add(")");
+						}
+						first = false;
+					}
+					buf.add(")");
+				case _:
+					buf.add(c);
+			}
+		}
+		return buf.toString();
+	}
+
+	#end
+
 	static function makeRule(fields:Map<String,Expr>, rule:Expr):String {
 		return switch(rule.expr) {
-			case EConst(CString(s)): s;
+			case EConst(CString(s)): #if unifill handleUnicode(s, rule.pos) #else s #end;
 			case EConst(CIdent(i)): makeRule(fields, fields.get(i));
 			case EBinop(OpAdd,e1,e2): "(" + makeRule(fields, e1) +")(" + makeRule(fields, e2) +")";
 			case EConst(CRegexp(r, opt)):
