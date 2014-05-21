@@ -67,18 +67,23 @@ class RuleBuilderImpl {
 		});
 		return ret;
 	}
-	
+
 	#if macro
-	
+
 	static function makeRule(fields:Map<String,Expr>, rule:Expr):String {
 		return switch(rule.expr) {
 			case EConst(CString(s)): s;
 			case EConst(CIdent(i)): makeRule(fields, fields.get(i));
 			case EBinop(OpAdd,e1,e2): "(" + makeRule(fields, e1) +")(" + makeRule(fields, e2) +")";
+			case EConst(CRegexp(r, opt)):
+				if (opt != "") {
+					Context.error("Cannot use regular expression flags for lexer rules", rule.pos);
+				}
+				r;
 			case _: Context.error("Invalid rule", rule.pos);
 		}
 	}
-	
+
 	static function transformRule(field:Field, e:Expr, t:ComplexType, fields:Map<String,Expr>) {
 		var el = switch(e.expr) {
 			case EArrayDecl(el): el;
@@ -102,7 +107,7 @@ class RuleBuilderImpl {
 		field.kind = FVar(null, e);
 		return e;
 	}
-	
+
 	static function transformMapping(field:Field, e:Expr, offset:Int) {
 		var t = Context.typeof(e).follow();
 		var sl = [];
@@ -120,6 +125,6 @@ class RuleBuilderImpl {
 		field.kind = FVar(null, e);
 		return e;
 	}
-	
+
 	#end
 }
