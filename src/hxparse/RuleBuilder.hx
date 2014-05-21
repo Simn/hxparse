@@ -73,6 +73,14 @@ class RuleBuilderImpl {
 	#if unifill
 
 	static function handleUnicode(s:String, p:Position) {
+		function getPosInfo(i, l) {
+			var p = Context.getPosInfos(p);
+			return Context.makePosition({
+				min: p.min + i,
+				max: p.min + i + l,
+				file: p.file
+			});
+		}
 		var uLength = unifill.Unifill.uLength(s);
 		if (uLength == s.length) {
 			return s;
@@ -92,23 +100,25 @@ class RuleBuilderImpl {
 						switch (c) {
 							case "]":
 								break;
+							case "^" if (first):
+								Context.error("Not-ranges are not supported in unicode strings", getPosInfo(i, 1));
 							case _:
 								if (!first) {
 									buf.add("|");
 								}
 								buf.add("(");
 								if (unifill.Unifill.uCharAt(s, i) == "-") {
-									buf.add("[");
-									buf.add(c);
-									buf.add("-");
-									++i;
-									c = unifill.Unifill.uCharAt(s, i);
-									if (c != String.fromCharCode(c.charCodeAt(0))) {
-										Context.error("Unicode ranges are not supported", p);
+									i += 2;
+									var cNext = unifill.Unifill.uCharAt(s, i);
+									if (unifill.Unifill.uCharAt(c, 0) != c.charAt(0)) {
+										Context.error("Unicode ranges are not supported", getPosInfo(i - 2, 4));
+									} else {
+										buf.add("[");
+										buf.add(c);
+										buf.add("-");
+										buf.add(cNext);
+										buf.add("]");
 									}
-									buf.add(c);
-									++i;
-									buf.add("]");
 								} else {
 									buf.add(c);
 								}
