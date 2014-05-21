@@ -353,6 +353,7 @@ class LexEngine {
 				i = r2.pos;
 				r = next(r, r2.pattern);
 			case ')'.code:
+				if (r == Empty) throw "Empty group";
 				return { pattern: Group(r), pos: i};
 			case '['.code if (pattern.length > 1):
 				var range = 0;
