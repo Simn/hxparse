@@ -22,7 +22,7 @@ class Test {
 		function eq(f1:Float, s:String) {
 			++numTests;
 			var lexer = new ArithmeticParser.ArithmeticLexer(byte.ByteData.ofString(s));
-			var ts = new hxparse.TokenSource.LexerTokenSource(lexer, ArithmeticParser.ArithmeticLexer.tok);
+			var ts = new hxparse.LexerTokenSource(lexer, ArithmeticParser.ArithmeticLexer.tok);
 			var parser = new ArithmeticParser(ts);
 			var f2 = ArithmeticParser.ArithmeticEvaluator.eval(parser.parse());
 			if (f1 != f2) {

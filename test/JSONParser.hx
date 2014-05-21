@@ -1,5 +1,3 @@
-import hxparse.TokenSource.LexerTokenSource;
-
 private enum Token {
 	TBrOpen;
 	TBrClose;
@@ -20,7 +18,7 @@ private enum Token {
 class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 
 	static var buf:StringBuf;
-		
+
 	public static var tok = @:rule [
 		"{" => TBrOpen,
 		"}" => TBrClose,
@@ -42,7 +40,7 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 		"[\r\n\t ]" => lexer.token(tok),
 		"" => TEof
 	];
-	
+
 	static var string = @:rule [
 		"\\\\t" => {
 			buf.addChar("\t".code);
@@ -74,13 +72,13 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class JSONParser extends hxparse.Parser<LexerTokenSource<Token>, Token> implements hxparse.ParserBuilder {
+class JSONParser extends hxparse.Parser<hxparse.LexerTokenSource<Token>, Token> implements hxparse.ParserBuilder {
 	public function new(input:byte.ByteData, sourceName:String) {
 		var lexer = new JSONLexer(input, sourceName);
-		var ts = new LexerTokenSource(lexer, JSONLexer.tok);
+		var ts = new hxparse.LexerTokenSource(lexer, JSONLexer.tok);
 		super(ts);
 	}
-		
+
 	public function parse():Dynamic {
 		return switch stream {
 			case [TBrOpen, obj = object({})]: obj;
@@ -92,7 +90,7 @@ class JSONParser extends hxparse.Parser<LexerTokenSource<Token>, Token> implemen
 			case [TString(s)]: s;
 		}
 	}
-	
+
 	function object(obj:{}) {
 		return switch stream {
 			case [TBrClose]: obj;

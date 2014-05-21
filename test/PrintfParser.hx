@@ -1,5 +1,3 @@
-import hxparse.TokenSource.LexerTokenSource;
-
 enum PToken {
 	Eof;
 	Placeholder;
@@ -32,14 +30,14 @@ enum Fmt<A,B> {
 }
 
 class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
-	
+
 	static public var tok = @:rule [
 		"$" => Placeholder,
 		"$$" => Literal(lexer.current),
 		"[^$]+" => Literal(lexer.current),
 		"" => Eof
 	];
-	
+
 	static public var placeholder = @:rule [
 		"0" => Flag(Zero),
 		"#" => Flag(Alt),
@@ -55,13 +53,13 @@ class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class PrintfParser extends hxparse.Parser<LexerTokenSource<PToken>, PToken> implements hxparse.ParserBuilder {
+class PrintfParser extends hxparse.Parser<hxparse.LexerTokenSource<PToken>, PToken> implements hxparse.ParserBuilder {
 	public function new(input:byte.ByteData) {
 		var lexer = new PrintfLexer(input);
-		var ts = new LexerTokenSource(lexer, PrintfLexer.tok);
+		var ts = new hxparse.LexerTokenSource(lexer, PrintfLexer.tok);
 		super(ts);
 	}
-	
+
 	public function parse() {
 		var v:Fmt<Dynamic,Dynamic> = switch stream {
 			case [Literal(s)]: Lit(s);
@@ -77,7 +75,7 @@ class PrintfParser extends hxparse.Parser<LexerTokenSource<PToken>, PToken> impl
 		var next = parse();
 		return next == null ? v : Cat(v, next);
 	}
-	
+
 	function parsePlaceholder() {
 		var flags = parseFlags([]);
 		var width = switch stream {
@@ -93,7 +91,7 @@ class PrintfParser extends hxparse.Parser<LexerTokenSource<PToken>, PToken> impl
 			case _: unexpected();
 		}
 	}
-	
+
 	function parseFlags(acc:Array<PFlag>) {
 		return switch stream {
 			case [Flag(x)]:
