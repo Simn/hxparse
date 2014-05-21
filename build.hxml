@@ -32,3 +32,6 @@
 
 --next
 -cs bin/cs
+
+--next
+-python bin/hxparse.py
