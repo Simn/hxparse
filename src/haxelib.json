@@ -3,7 +3,7 @@
   "url": "https://github.com/Simn/hxparse",
   "license": "BSD",
   "description": "This library provides tools for creating lexers and parsers in haxe.",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "releasenote": "restructured",
   "contributors": ["Simn"]
 }
