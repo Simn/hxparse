@@ -29,7 +29,7 @@ class ParserBuilderImpl {
 		}
 		return fields;
 	}
-	
+
 	static function punion(p1:Position, p2:Position) {
 		var p1 = Context.getPosInfos(p1);
 		var p2 = Context.getPosInfos(p2);
@@ -39,7 +39,7 @@ class ParserBuilderImpl {
 			max: p1.max > p2.max ? p1.max : p2.max
 		});
 	}
-	
+
 	static function map(needVal:Bool, e:Expr) {
 		return switch(e.expr) {
 			case ESwitch({expr: EConst(CIdent("stream"))}, cl, edef):
@@ -57,7 +57,7 @@ class ParserBuilderImpl {
 			case _: e.map(map.bind(true));
 		}
 	}
-	
+
 	static function transformCases(needVal:Bool, cl:Array<Case>) {
 		var groups = [];
 		var group = [];
@@ -85,7 +85,7 @@ class ParserBuilderImpl {
 		}
 		if (group.length > 0)
 			groups.push(Simple(group));
-			
+
 		var last = groups.pop();
 		var elast = makeCase(last,def);
 		while (groups.length > 0) {
@@ -93,10 +93,10 @@ class ParserBuilderImpl {
 		}
 		return elast;
 	}
-	
+
 	static var unexpected = macro unexpected();
 	static var noMatch = macro throw noMatch();
-		
+
 	static function makeCase(g:CaseGroup, def:Expr) {
 		return switch(g) {
 			case Simple(group):
@@ -113,7 +113,7 @@ class ParserBuilderImpl {
 				makePattern(c.head, inner.expr, def);
 		}
 	}
-	
+
 	static function makeInner(c:ParserCase) {
 		var last = c.tail.pop();
 		if (last == null) {
@@ -124,7 +124,7 @@ class ParserBuilderImpl {
 			elast = makePattern(c.tail.pop(), elast, unexpected);
 		return {values: [c.head], guard: null, expr: elast};
 	}
-	
+
 	static function makePattern(pat:Expr, e:Expr, def:Expr) {
 		return switch(pat.expr) {
 			case EBinop(OpAssign, {expr: EConst(CIdent(s))}, e2):
@@ -158,7 +158,7 @@ class ParserBuilderImpl {
 				}
 		}
 	}
-	
+
 	static function buildExtractor(pat, e, e2, s, def) {
 		var e1 = s == "_" ? e2 : macro var $s = $e2;
 		return macro @:pos(pat.pos) {

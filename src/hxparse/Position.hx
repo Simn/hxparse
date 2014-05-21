@@ -8,17 +8,17 @@ class Position {
 		Name of the source.
 	**/
 	public var psource : String;
-	
+
 	/**
 		The first character position, counting from the beginning of the input.
 	**/
 	public var pmin : Int;
-	
+
 	/**
 		The last character position, counting from the beginning of the input.
 	**/
 	public var pmax : Int;
-	
+
 	/**
 		Creates a new `Position` from the given information.
 	**/
@@ -27,14 +27,14 @@ class Position {
 		pmin = min;
 		pmax = max;
 	}
-	
+
 	/**
 		Returns a readable representation of `this` position;
 	**/
 	public function toString() {
 		return '$psource:characters $pmin-$pmax';
 	}
-	
+
 	public function getLinePosition(input:byte.ByteData) {
 		var lineMin = 1;
 		var lineMax = 1;
@@ -66,10 +66,10 @@ class Position {
 			posMax: posMax
 		}
 	}
-	
+
 	/**
 		Formats `this` position by resolving line numbers within `input`.
-		
+
 		If `input` is null, the result is unspecified.
 	**/
 	public function format(input:byte.ByteData) {
@@ -80,13 +80,13 @@ class Position {
 			return '${psource}:line ${linePos.lineMin}:characters ${linePos.posMin}-${linePos.posMax}';
 		}
 	}
-	
+
 	/**
 		Unifies two positions `p1` and `p2`, using the minimum `pmin` and
 		maximum `pmax` of both.
-		
+
 		The resulting `psource` and `pline` are taken from `p1`.
-		
+
 		If `p1` or `p2` are null, the result is unspecified.
 	**/
 	static public function union(p1:Position, p2:Position) {

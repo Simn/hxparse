@@ -5,17 +5,17 @@ package hxparse;
 	which no state transition is defined.
 **/
 class UnexpectedChar {
-	
+
 	/**
 		The character which caused `this` exception.
 	**/
 	public var char:String;
-	
+
 	/**
 		The position in the input where `this` exception occured.
 	**/
 	public var pos:Position;
-	
+
 	/**
 		Creates a new instance of UnexpectedChar.
 	**/
@@ -23,7 +23,7 @@ class UnexpectedChar {
 		this.char = char;
 		this.pos = pos;
 	}
-	
+
 	/**
 		Returns a readable representation of `this` exception.
 	**/

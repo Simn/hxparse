@@ -2,7 +2,7 @@ package hxparse;
 
 /**
 	Parser is the base class for all custom parsers.
-	
+
 	The intended usage is to extend it and utilize its method as an API where
 	required.
  */
@@ -11,21 +11,21 @@ class Parser<S:TokenSource<Token>, Token> {
 
 	/**
 		Returns the last matched token.
-		
+
 		This is a convenience property for accessing `cache[offset - 1]`.
 	**/
 	public var last(default, null):Token;
-	
+
 	var stream:S;
 	var token:haxe.ds.GenericStack.GenericCell<Token>;
-	
+
 	/**
 		Creates a new Parser instance over `TokenSource` `stream`
 	**/
 	public function new(stream:S) {
 		this.stream = stream;
 	}
-	
+
 	/**
 		Returns the `n`th token without consuming it.
 	**/
@@ -43,10 +43,10 @@ class Parser<S:TokenSource<Token>, Token> {
 		}
 		return tok.elt;
 	}
-	
+
 	/**
 		Consumes the current token.
-		
+
 		This method is automatically called after a successful match.
 	**/
 	@:dox(show)
@@ -54,7 +54,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		last = token.elt;
 		token = token.next;
 	}
-		
+
 	/**
 		Returns the current lexer position.
 	**/
@@ -62,13 +62,13 @@ class Parser<S:TokenSource<Token>, Token> {
 	public inline function curPos() {
 		return stream.curPos();
 	}
-	
+
 	/**
 		Invokes `f` and then `separatorFunc` with the current token until the
 		result of that call is `false`.
-		
+
 		The result is an Array containing the results of all calls to `f`.
-		
+
 		A typical use case is parsing function arguments which are separated by
 		a comma.
 	**/
@@ -85,7 +85,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		}
 		return acc;
 	}
-	
+
 	/**
 		Returns the result of calling `f()` if a match is made, or `null`
 		otherwise`.
@@ -98,10 +98,10 @@ class Parser<S:TokenSource<Token>, Token> {
 			return null;
 		}
 	}
-	
+
 	/**
 		Calls `f` until no match can be made.
-		
+
 		The result is an Array containing the results of all calls to `f`.
 	**/
 	@:dox(show)
@@ -115,11 +115,11 @@ class Parser<S:TokenSource<Token>, Token> {
 			}
 		}
 	}
-	
+
 	inline function noMatch() {
 		return new NoMatch(stream.curPos(), peek(0));
 	}
-	
+
 	inline function unexpected():Dynamic {
 		return throw new Unexpected(peek(0), stream.curPos());
 	}
