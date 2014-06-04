@@ -86,32 +86,44 @@ class RuleBuilderImpl {
 			return s;
 		}
 		var buf = new StringBuf();
-		var i = 0;
-		while (i < uLength) {
-			var c = unifill.Unifill.uCharAt(s, i);
-			++i;
+		var itr = new unifill.InternalEncodingIter(s, 0, s.length);
+		while (itr.hasNext()) {
+			var i = itr.next();
+			var c = unifill.InternalEncoding.charAt(s, i);
 			switch (c) {
 				case '[':
 					buf.add("(");
 					var first = true;
 					while(true) {
-						var c = unifill.Unifill.uCharAt(s, i);
-						++i;
+						if (!itr.hasNext()) {
+							Context.error("Unterminated regular expression", getPosInfo(itr.index, 1));
+						}
+						var i = itr.next();
+						var c = unifill.InternalEncoding.charAt(s, i);
 						switch (c) {
 							case "]":
 								break;
 							case "^" if (first):
+								var p = unifill.InternalEncoding.codePointCount(s, 0, i);
 								Context.error("Not-ranges are not supported in unicode strings", getPosInfo(i, 1));
 							case _:
 								if (!first) {
 									buf.add("|");
 								}
 								buf.add("(");
-								if (unifill.Unifill.uCharAt(s, i) == "-") {
-									i += 2;
-									var cNext = unifill.Unifill.uCharAt(s, i);
-									if (unifill.Unifill.uCharAt(c, 0) != c.charAt(0)) {
-										Context.error("Unicode ranges are not supported", getPosInfo(i - 2, 4));
+								if (!itr.hasNext()) {
+									Context.error("Unterminated regular expression", getPosInfo(itr.index, 1));
+								}
+								var w = unifill.InternalEncoding.codePointWidthAt(s, i);
+								if (unifill.InternalEncoding.charAt(s, i + w) == "-") {
+									itr.next();
+									if (!itr.hasNext()) {
+										Context.error("Unterminated regular expression", getPosInfo(itr.index, 1));
+									}
+									var k = itr.next();
+									var cNext = unifill.InternalEncoding.charAt(s, k);
+									if (unifill.InternalEncoding.codePointAt(c, 0) > 0x7F) {
+										Context.error("Unicode ranges are not supported", getPosInfo(i, 3));
 									} else {
 										buf.add("[");
 										buf.add(c);
