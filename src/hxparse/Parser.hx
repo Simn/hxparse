@@ -6,7 +6,6 @@ package hxparse;
 	The intended usage is to extend it and utilize its method as an API where
 	required.
  */
-@:generic
 class Parser<S:TokenSource<Token>, Token> {
 
 	/**
