@@ -29,7 +29,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		Returns the `n`th token without consuming it.
 	**/
 	@:dox(show)
-	function peek(n:Int):Token {
+	inline function peek(n:Int):Token {
 		if (token == null) {
 			token = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(), null);
 			n--;
