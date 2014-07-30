@@ -13,11 +13,12 @@ typedef ByteData = byte.php.ByteData;
 #elseif js
 typedef ByteData = byte.js.ByteData;
 #else
+typedef ByteData = VectorByteData;
 
 typedef NativeByteRepresentation = haxe.ds.Vector<Int>;
 
-abstract ByteData(NativeByteRepresentation) {
-	
+abstract VectorByteData(NativeByteRepresentation) {
+
 	public var length(get, never):Int;
 	inline function get_length():Int return this.length;
 
@@ -26,19 +27,19 @@ abstract ByteData(NativeByteRepresentation) {
 
 	public var writer(get, never):LittleEndianWriter;
 	inline function get_writer() return new LittleEndianWriter(new ByteData(this));
-	
+
 	public inline function new(data:NativeByteRepresentation) {
 		this = data;
 	}
-		
+
 	public inline function readByte(pos:Int):Int {
 		return this.get(pos);
 	}
-	
+
 	public inline function writeByte( pos : Int, v : Int ) : Void {
 		this.set(pos, v & 0xFF);
 	}
-	
+
 	public function readString(pos:Int, len:Int) {
 		var s = "";
 		var i = pos;
@@ -62,13 +63,13 @@ abstract ByteData(NativeByteRepresentation) {
 		}
 		return s;
 	}
-	
+
 	static public function alloc(length:Int) {
 		var vec = new haxe.ds.Vector(length);
 		for (i in 0...length) vec.set(i, 0);
 		return new ByteData(vec);
 	}
-		
+
 	static public function ofString(s:String):ByteData {
 		var a = new Array();
 		// utf8-decode
