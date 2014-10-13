@@ -121,6 +121,6 @@ class Parser<S:TokenSource<Token>, Token> {
 	}
 
 	inline function unexpected():Dynamic {
-		return throw new Unexpected(peek(0), stream.curPos());
+		throw new Unexpected(peek(0), stream.curPos());
 	}
 }
