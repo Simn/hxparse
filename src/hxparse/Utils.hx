@@ -24,12 +24,8 @@ class Utils {
 	static public function catchErrors<T>(input:byte.ByteData, f:Void->T) {
 		try {
 			return f();
-		} catch(e:NoMatch<Dynamic>) {
-			throw "NoMatch: " + e.token + " at " + e.pos.format(input);
-		} catch(e:Unexpected<Dynamic>) {
-			throw "Unexpected " + e.token + " at " + e.pos.format(input);
-		} catch(e:UnexpectedChar) {
-			throw "UnexpectedChar " + e.char + " at " + e.pos.format(input);
+		} catch(e:ParserError) {
+			throw e.toString() + " at " + e.pos.format(input);
 		}
 	}
 }

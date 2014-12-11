@@ -7,7 +7,7 @@ package hxparse;
 	Unlike `NoMatch`, this exception denotes that the stream is in an
 	irrecoverable state because tokens have been consumed.
 **/
-class Unexpected<Token> {
+class Unexpected<Token> extends ParserError {
 
 	/**
 		The token which was found.
@@ -15,22 +15,17 @@ class Unexpected<Token> {
 	public var token:Token;
 
 	/**
-		The position in the input where `this` exception occured.
-	**/
-	public var pos:Position;
-
-	/**
 		Creates a new instance of Unexpected.
 	**/
 	public function new(token:Token, pos) {
+		super(pos);
 		this.token = token;
-		this.pos = pos;
 	}
 
 	/**
 		Returns a readable representation of `this` exception.
 	**/
-	public function toString() {
+	override public function toString() {
 		return 'Unexpected $token at $pos';
 	}
 }
