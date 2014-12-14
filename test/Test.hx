@@ -19,14 +19,14 @@ class Test {
 		trace( tokens );
 
 		var numTests = 0;
-		function eq(f1:Float, s:String) {
+		function eq(expected:Float, s:String) {
 			++numTests;
 			var lexer = new ArithmeticParser.ArithmeticLexer(byte.ByteData.ofString(s));
 			var ts = new hxparse.LexerTokenSource(lexer, ArithmeticParser.ArithmeticLexer.tok);
 			var parser = new ArithmeticParser(ts);
-			var f2 = ArithmeticParser.ArithmeticEvaluator.eval(parser.parse());
-			if (f1 != f2) {
-				trace('$f2 should be $f2');
+			var result = ArithmeticParser.ArithmeticEvaluator.eval(parser.parse());
+			if (expected != result) {
+				trace('Error in "$s"; expected $expected but was $result');
 			}
 		}
 		eq(1, "1");
@@ -40,6 +40,7 @@ class Test {
 		eq(-9, "-9");
 		eq(-12, "-(4 + 8)");
 		eq(12, "--12");
+		eq(8, "2*(3-(2+(-3)))");
 		trace('Done $numTests tests');
 	}
 }
