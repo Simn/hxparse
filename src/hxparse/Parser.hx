@@ -123,4 +123,14 @@ class Parser<S:TokenSource<Token>, Token> {
 	inline function unexpected():Dynamic {
 		throw new Unexpected(peek(0), stream.curPos());
 	}
+
+	@:access(hxparse.ParserBuilderImpl.transformSwitch)
+	static macro function parse(e:haxe.macro.Expr) {
+		switch (e.expr) {
+			case ESwitch(_, cases, edef) | EParenthesis({expr: ESwitch(_, cases, edef)}):
+				return hxparse.ParserBuilderImpl.transformSwitch(cases, edef);
+			case _:
+				return haxe.macro.Context.error("Expected switch expression", e.pos);
+		}
+	}
 }

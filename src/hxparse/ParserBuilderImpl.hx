@@ -43,10 +43,7 @@ class ParserBuilderImpl {
 	static function map(e:Expr) {
 		return switch(e.expr) {
 			case ESwitch({expr: EConst(CIdent("stream"))}, cl, edef):
-				if (edef != null)
-					cl.push({values: [macro _], expr: edef, guard: null});
-				var ce = transformCases(cl);
-				ce;
+				transformSwitch(cl, edef);
 			case EBlock([]):
 				e;
 			case EBlock(el):
@@ -56,6 +53,12 @@ class ParserBuilderImpl {
 				macro @:pos(e.pos) $b{el};
 			case _: e.map(map);
 		}
+	}
+
+	static function transformSwitch(cl:Array<Case>, edef:Null<Expr>) {
+		if (edef != null)
+			cl.push({values: [macro _], expr: edef, guard: null});
+		return transformCases(cl);
 	}
 
 	static function transformCases(cl:Array<Case>) {
