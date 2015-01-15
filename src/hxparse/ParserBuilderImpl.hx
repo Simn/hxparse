@@ -23,7 +23,7 @@ class ParserBuilderImpl {
 		for (field in fields) {
 			switch(field.kind) {
 				case FFun(fun) if (fun.expr != null):
-					fun.expr = map(true, fun.expr);
+					fun.expr = map(fun.expr);
 				case _:
 			}
 		}
@@ -40,25 +40,28 @@ class ParserBuilderImpl {
 		});
 	}
 
-	static function map(needVal:Bool, e:Expr) {
+	static function map(e:Expr) {
 		return switch(e.expr) {
 			case ESwitch({expr: EConst(CIdent("stream"))}, cl, edef):
-				if (edef != null)
-					cl.push({values: [macro _], expr: edef, guard: null});
-				var ce = transformCases(needVal, cl);
-				ce;
+				transformSwitch(cl, edef);
 			case EBlock([]):
 				e;
 			case EBlock(el):
 				var elast = el.pop();
-				var el = el.map(map.bind(false));
-				el.push(map(true, elast));
+				var el = el.map(map);
+				el.push(map(elast));
 				macro @:pos(e.pos) $b{el};
-			case _: e.map(map.bind(true));
+			case _: e.map(map);
 		}
 	}
 
-	static function transformCases(needVal:Bool, cl:Array<Case>) {
+	static function transformSwitch(cl:Array<Case>, edef:Null<Expr>) {
+		if (edef != null)
+			cl.push({values: [macro _], expr: edef, guard: null});
+		return transformCases(cl);
+	}
+
+	static function transformCases(cl:Array<Case>) {
 		var groups = [];
 		var group = [];
 		var def = noMatch;
@@ -66,7 +69,7 @@ class ParserBuilderImpl {
 			switch(c.values) {
 				case [{expr:EArrayDecl(el)}]:
 					var head = el.shift();
-					var chead = {head:head, tail: el, expr:c.expr == null ? macro null : map(true,c.expr)};
+					var chead = {head:head, tail: el, expr:c.expr == null ? macro null : map(c.expr)};
 					switch(head.expr) {
 						case EBinop(_):
 							if (group.length > 0) groups.push(Simple(group));
@@ -76,7 +79,7 @@ class ParserBuilderImpl {
 							group.push(chead);
 					}
 				case [{expr:EConst(CIdent("_"))}]:
-					def = c.expr == null ? macro null : map(true, c.expr);
+					def = c.expr == null ? macro null : map(c.expr);
 				case [e]:
 					Context.error("Expected [ patterns ]", e.pos);
 				case _:

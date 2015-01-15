@@ -1,11 +1,5 @@
 package hxparse;
 
-private class GenericCell<T> {
-	public var elt : T;
-	public var next : GenericCell<T>;
-	public function new(elt,next) { this.elt = elt; this.next = next; }
-}
-
 /**
 	Parser is the base class for all custom parsers.
 
@@ -22,7 +16,7 @@ class Parser<S:TokenSource<Token>, Token> {
 	public var last(default, null):Token;
 
 	var stream:S;
-	var token:GenericCell<Token>;
+	var token:haxe.ds.GenericStack.GenericCell<Token>;
 
 	/**
 		Creates a new Parser instance over `TokenSource` `stream`
@@ -38,12 +32,12 @@ class Parser<S:TokenSource<Token>, Token> {
 	#if cs inline #end // Workaround for https://github.com/HaxeFoundation/haxe/issues/3212
 	function peek(n:Int):Token {
 		if (token == null) {
-			token = new GenericCell<Token>(stream.token(), null);
+			token = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(), null);
 			n--;
 		}
 		var tok = token;
 		while (n > 0) {
-			if (tok.next == null) tok.next = new GenericCell<Token>(stream.token(), null);
+			if (tok.next == null) tok.next = new haxe.ds.GenericStack.GenericCell<Token>(stream.token(), null);
 			tok = tok.next;
 			n--;
 		}
@@ -128,5 +122,15 @@ class Parser<S:TokenSource<Token>, Token> {
 
 	inline function unexpected():Dynamic {
 		throw new Unexpected(peek(0), stream.curPos());
+	}
+
+	@:access(hxparse.ParserBuilderImpl.transformSwitch)
+	static macro function parse(e:haxe.macro.Expr) {
+		switch (e.expr) {
+			case ESwitch(_, cases, edef) | EParenthesis({expr: ESwitch(_, cases, edef)}):
+				return hxparse.ParserBuilderImpl.transformSwitch(cases, edef);
+			case _:
+				return haxe.macro.Context.error("Expected switch expression", e.pos);
+		}
 	}
 }
