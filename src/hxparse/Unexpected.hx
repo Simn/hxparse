@@ -20,6 +20,7 @@ class Unexpected<Token> extends ParserError {
 	public function new(token:Token, pos) {
 		super(pos);
 		this.token = token;
+		trace ('Unexpected $token at $pos');
 	}
 
 	/**
