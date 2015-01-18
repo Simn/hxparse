@@ -6,6 +6,7 @@ package hxparse;
 	The intended usage is to extend it and utilize its method as an API where
 	required.
  */
+@:generic
 class Parser<S:TokenSource<Token>, Token> {
 
 	/**
@@ -125,7 +126,7 @@ class Parser<S:TokenSource<Token>, Token> {
 	}
 
 	@:access(hxparse.ParserBuilderImpl.transformSwitch)
-	static macro function parse(e:haxe.macro.Expr) {
+	static public macro function parse(e:haxe.macro.Expr) {
 		switch (e.expr) {
 			case ESwitch(_, cases, edef) | EParenthesis({expr: ESwitch(_, cases, edef)}):
 				return hxparse.ParserBuilderImpl.transformSwitch(cases, edef);
