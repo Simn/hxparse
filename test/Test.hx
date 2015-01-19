@@ -1,5 +1,8 @@
 class Test {
 	static function main() {
+
+		var t0 = haxe.Timer.stamp();
+
 		var parser = new PrintfParser(byte.ByteData.ofString("Valu$$e: $-050.2f kg"));
 		trace(parser.parse());
 
@@ -41,6 +44,8 @@ class Test {
 		eq(-12, "-(4 + 8)");
 		eq(12, "--12");
 		eq(8, "2*(3-(2+(-3)))");
-		trace('Done $numTests tests');
+
+		var diff = haxe.Timer.stamp() - t0;
+		trace('Done $numTests tests in $diff ms');
 	}
 }
