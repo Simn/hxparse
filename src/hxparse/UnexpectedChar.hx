@@ -23,6 +23,6 @@ class UnexpectedChar extends ParserError {
 		Returns a readable representation of `this` exception.
 	**/
 	override public function toString() {
-		return '$pos: Unexpected $char';
+		return 'Unexpected $char';
 	}
 }

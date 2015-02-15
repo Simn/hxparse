@@ -26,6 +26,6 @@ class Unexpected<Token> extends ParserError {
 		Returns a readable representation of `this` exception.
 	**/
 	override public function toString() {
-		return 'Unexpected $token at $pos';
+		return 'Unexpected $token';
 	}
 }

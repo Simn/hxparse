@@ -21,6 +21,6 @@ class NoMatch<T> extends ParserError {
 	}
 
 	override public function toString() {
-		return '$pos: No match: $token';
+		return 'No match: $token';
 	}
 }

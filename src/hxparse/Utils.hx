@@ -25,7 +25,7 @@ class Utils {
 		try {
 			return f();
 		} catch(e:ParserError) {
-			throw e.toString() + " at " + e.pos.format(input);
+			throw e.pos.format(input) + ": " + e.toString();
 		}
 	}
 }

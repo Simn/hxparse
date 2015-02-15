@@ -77,7 +77,11 @@ class Parser<S:TokenSource<Token>, Token> {
 	function parseSeparated<T>(separatorFunc:Token->Bool, f:Void->T):Array<T> {
 		var acc = [];
 		while(true) {
-			acc.push(f());
+			try {
+				acc.push(f());
+			} catch(e:hxparse.NoMatch<Dynamic>) {
+				break;
+			}
 			if (separatorFunc(peek(0))) {
 				junk();
 			} else {
@@ -114,6 +118,14 @@ class Parser<S:TokenSource<Token>, Token> {
 			} catch(e:hxparse.NoMatch<Dynamic>) {
 				return acc;
 			}
+		}
+	}
+
+	function parseExpect<T>(f:Void->T) {
+		try {
+			return f();
+		} catch(_:NoMatch<Dynamic>) {
+			unexpected();
 		}
 	}
 

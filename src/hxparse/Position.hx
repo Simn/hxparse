@@ -44,7 +44,7 @@ class Position {
 		while (cur < pmin) {
 			if (input.readByte(cur) == "\n".code) {
 				lineMin++;
-				posMin = cur;
+				posMin = cur + 1;
 			}
 			cur++;
 		}
@@ -54,7 +54,7 @@ class Position {
 		while (cur < pmax) {
 			if (input.readByte(cur) == "\n".code) {
 				lineMax++;
-				posMax = cur;
+				posMax = cur + 1;
 			}
 			cur++;
 		}
@@ -77,7 +77,7 @@ class Position {
 		if (linePos.lineMin != linePos.lineMax) {
 			return '${psource}:lines ${linePos.lineMin}-${linePos.lineMax}';
 		} else {
-			return '${psource}:line ${linePos.lineMin}:characters ${linePos.posMin}-${linePos.posMax}';
+			return '${psource}:${linePos.lineMin}:characters ${linePos.posMin}-${linePos.posMax}';
 		}
 	}
 

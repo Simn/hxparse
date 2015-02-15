@@ -142,12 +142,11 @@ class ParserBuilderImpl {
 				}
 			case EBinop(OpBoolAnd, e1, e2):
 				macro @:pos(pat.pos) {
-					function def() return $def;
 					switch peek(0) {
 						case $e1 if ($e2):
 							junk();
 							$e;
-						case _: def();
+						case _: $def;
 					}
 				}
 			case EBinop(OpBoolOr, e1, e2):
