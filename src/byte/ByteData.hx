@@ -1,6 +1,6 @@
 package byte;
 
-abstract ByteData(haxe.io.Uint8Array) {
+abstract ByteData(haxe.io.UInt8Array) {
 
 	public var length(get,never):Int;
 	inline function get_length() return this.length;
@@ -32,7 +32,7 @@ abstract ByteData(haxe.io.Uint8Array) {
 				a.push( 0x80 | (c & 63) );
 			}
 		}
-		var bd = new haxe.io.Uint8Array(a.length);
+		var bd = new haxe.io.UInt8Array(a.length);
 		for (i in 0...bd.length) {
 			bd.set(i, a[i]);
 		}
