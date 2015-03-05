@@ -13,8 +13,11 @@ abstract ByteData(haxe.io.UInt8Array) {
 
 	static public function ofString(s:String):ByteData {
 		var a = new Array();
+		// let's skip the bom here because otherwise UTF8 decoding is gonna
+		// mess it up
+		var first = StringTools.fastCodeAt(s, 0) == 239 ? 3 : 0;
 		// utf8-decode
-		for( i in 0...s.length ) {
+		for( i in first...s.length ) {
 			var c : Int = StringTools.fastCodeAt(s,i);
 			if( c <= 0x7F )
 				a.push(c);
