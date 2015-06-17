@@ -4,30 +4,25 @@ package hxparse;
 	UnexpectedChar is thrown by `Lexer.token` if it encounters a character for
 	which no state transition is defined.
 **/
-class UnexpectedChar {
-	
+class UnexpectedChar extends ParserError {
+
 	/**
 		The character which caused `this` exception.
 	**/
 	public var char:String;
-	
-	/**
-		The position in the input where `this` exception occured.
-	**/
-	public var pos:Position;
-	
+
 	/**
 		Creates a new instance of UnexpectedChar.
 	**/
 	public function new(char, pos) {
+		super(pos);
 		this.char = char;
-		this.pos = pos;
 	}
-	
+
 	/**
 		Returns a readable representation of `this` exception.
 	**/
-	public function toString() {
-		return '$pos: Unexpected $char';
+	override public function toString() {
+		return 'Unexpected $char';
 	}
 }

@@ -2,8 +2,10 @@
 -cp test
 -main Test
 -dce full
+-lib unifill
 --each
 
+-dce std
 -xml bin/hxparse.xml
 
 --next
@@ -28,3 +30,9 @@
 
 --next
 -java bin/java
+
+--next
+-cs bin/cs
+
+--next
+-python bin/hxparse.py

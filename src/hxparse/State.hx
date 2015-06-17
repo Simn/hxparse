@@ -8,12 +8,12 @@ class State {
 		The transition vector, where the index corresponds to a char code.
 	**/
 	public var trans:haxe.ds.Vector<State>;
-	
+
 	/**
 		The ids of the final states.
 	**/
 	public var final:Int;
-	
+
 	/**
 		Creates a new State.
 	**/

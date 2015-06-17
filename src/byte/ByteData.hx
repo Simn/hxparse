@@ -1,78 +1,23 @@
 package byte;
 
-#if flash9
-typedef ByteData = byte.flash.ByteData;
-#elseif neko
-typedef ByteData = byte.neko.ByteData;
-#elseif cpp
-typedef ByteData = byte.cpp.ByteData;
-#elseif java
-typedef ByteData = byte.java.ByteData;
-#elseif php
-typedef ByteData = byte.php.ByteData;
-#elseif js
-typedef ByteData = byte.js.ByteData;
-#else
+abstract ByteData(haxe.io.UInt8Array) {
 
-typedef NativeByteRepresentation = haxe.ds.Vector<Int>;
+	public var length(get,never):Int;
+	inline function get_length() return this.length;
 
-abstract ByteData(NativeByteRepresentation) {
-	
-	public var length(get, never):Int;
-	inline function get_length():Int return this.length;
+	inline public function readByte(i:Int) return this.get(i);
 
-	public var reader(get, never):LittleEndianReader;
-	inline function get_reader() return new LittleEndianReader(new ByteData(this));
-
-	public var writer(get, never):LittleEndianWriter;
-	inline function get_writer() return new LittleEndianWriter(new ByteData(this));
-	
-	public inline function new(data:NativeByteRepresentation) {
+	inline function new(data) {
 		this = data;
 	}
-		
-	public inline function readByte(pos:Int):Int {
-		return this.get(pos);
-	}
-	
-	public inline function writeByte( pos : Int, v : Int ) : Void {
-		this.set(pos, v & 0xFF);
-	}
-	
-	public function readString(pos:Int, len:Int) {
-		var s = "";
-		var i = pos;
-		var max = pos + len;
-		// utf8-encode
-		while( i < max ) {
-			var c = readByte(i++);
-			if( c < 0x80 ) {
-				if( c == 0 ) break;
-				s += String.fromCharCode(c);
-			} else if( c < 0xE0 )
-				s += String.fromCharCode( ((c & 0x3F) << 6) | (readByte(i++) & 0x7F) );
-			else if( c < 0xF0 ) {
-				var c2 = readByte(i++);
-				s += String.fromCharCode( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | (readByte(i++) & 0x7F) );
-			} else {
-				var c2 = readByte(i++);
-				var c3 = readByte(i++);
-				s += String.fromCharCode( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (readByte(i++) & 0x7F) );
-			}
-		}
-		return s;
-	}
-	
-	static public function alloc(length:Int) {
-		var vec = new haxe.ds.Vector(length);
-		for (i in 0...length) vec.set(i, 0);
-		return new ByteData(vec);
-	}
-		
+
 	static public function ofString(s:String):ByteData {
 		var a = new Array();
+		// let's skip the bom here because otherwise UTF8 decoding is gonna
+		// mess it up
+		var first = StringTools.fastCodeAt(s, 0) == 239 ? 3 : 0;
 		// utf8-decode
-		for( i in 0...s.length ) {
+		for( i in first...s.length ) {
 			var c : Int = StringTools.fastCodeAt(s,i);
 			if( c <= 0x7F )
 				a.push(c);
@@ -90,7 +35,34 @@ abstract ByteData(NativeByteRepresentation) {
 				a.push( 0x80 | (c & 63) );
 			}
 		}
-		return new ByteData(haxe.ds.Vector.fromArrayCopy(a));
+		var bd = new haxe.io.UInt8Array(a.length);
+		for (i in 0...bd.length) {
+			bd.set(i, a[i]);
+		}
+		return new ByteData(bd);
+	}
+
+	public function readString(pos:Int, len:Int) {
+		var s = new StringBuf();
+		var i = pos;
+		var max = pos + len;
+		// utf8-encode
+		while( i < max ) {
+			var c = readByte(i++);
+			if( c < 0x80 ) {
+				if( c == 0 ) break;
+				s.addChar(c);
+			} else if( c < 0xE0 )
+				s.addChar( ((c & 0x3F) << 6) | (readByte(i++) & 0x7F) );
+			else if( c < 0xF0 ) {
+				var c2 = readByte(i++);
+				s.addChar( ((c & 0x1F) << 12) | ((c2 & 0x7F) << 6) | (readByte(i++) & 0x7F) );
+			} else {
+				var c2 = readByte(i++);
+				var c3 = readByte(i++);
+				s.addChar( ((c & 0x0F) << 18) | ((c2 & 0x7F) << 12) | ((c3 << 6) & 0x7F) | (readByte(i++) & 0x7F) );
+			}
+		}
+		return s.toString();
 	}
 }
-#end

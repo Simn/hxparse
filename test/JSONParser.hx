@@ -1,3 +1,5 @@
+import hxparse.Parser.parse as parse;
+
 private enum Token {
 	TBrOpen;
 	TBrClose;
@@ -18,7 +20,7 @@ private enum Token {
 class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 
 	static var buf:StringBuf;
-		
+
 	public static var tok = @:rule [
 		"{" => TBrOpen,
 		"}" => TBrClose,
@@ -40,7 +42,7 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 		"[\r\n\t ]" => lexer.token(tok),
 		"" => TEof
 	];
-	
+
 	static var string = @:rule [
 		"\\\\t" => {
 			buf.addChar("\t".code);
@@ -72,13 +74,15 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 	];
 }
 
-class JSONParser extends hxparse.Parser<JSONLexer, Token> implements hxparse.ParserBuilder {
+class JSONParser extends hxparse.Parser<hxparse.LexerTokenSource<Token>, Token> {
 	public function new(input:byte.ByteData, sourceName:String) {
-		super(new JSONLexer(input, sourceName), JSONLexer.tok);
+		var lexer = new JSONLexer(input, sourceName);
+		var ts = new hxparse.LexerTokenSource(lexer, JSONLexer.tok);
+		super(ts);
 	}
-		
-	public function parse():Dynamic {
-		return switch stream {
+
+	public function parseJson():Dynamic {
+		return parse(switch stream {
 			case [TBrOpen, obj = object({})]: obj;
 			case [TBkOpen, arr = array([])]: arr;
 			case [TNumber(s)]: s;
@@ -86,30 +90,30 @@ class JSONParser extends hxparse.Parser<JSONLexer, Token> implements hxparse.Par
 			case [TFalse]: false;
 			case [TNull]: null;
 			case [TString(s)]: s;
-		}
+		});
 	}
-	
+
 	function object(obj:{}) {
-		return switch stream {
+		return parse(switch stream {
 			case [TBrClose]: obj;
-			case [TString(s), TDblDot, e = parse()]:
+			case [TString(s), TDblDot, e = parseJson()]:
 				Reflect.setField(obj, s, e);
 				switch stream {
 					case [TBrClose]: obj;
 					case [TComma]: object(obj);
 				}
-		}
+		});
 	}
 
 	function array(acc:Array<Dynamic>) {
-		return switch stream {
+		return parse(switch stream {
 			case [TBkClose]: acc;
-			case [elt = parse()]:
+			case [elt = parseJson()]:
 				acc.push(elt);
 				switch stream {
 					case [TBkClose]: acc;
 					case [TComma]: array(acc);
 				}
-		}
+		});
 	}
 }

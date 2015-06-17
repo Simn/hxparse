@@ -21,12 +21,14 @@ class RuleBuilderImpl {
 		var fieldExprs = new Map();
 		var delays = [];
 		var ret = [];
+		var rules = [];
 		for (field in fields) {
 			if (field.access.exists(function(a) return a == AStatic))
 				switch(field.kind) {
 					case FVar(t, e) if (e != null):
 						switch(e.expr) {
 							case EMeta({name: ":rule"}, e):
+								rules.push(field.name);
 								delays.push(transformRule.bind(field, e, t, fieldExprs));
 							case EMeta({name: ":mapping", params: args}, e):
 								var offset = switch(args) {
@@ -45,20 +47,121 @@ class RuleBuilderImpl {
 		}
 		for (delay in delays)
 			delay();
+		var ruleIdents = [for (rv in rules) macro $i{rv}];
+		ret.push( {
+			name: "generatedRulesets",
+			access: [APublic, AStatic],
+			kind: FVar(TPath({
+				name: "Array",
+				pack: [],
+				params: [TPType(TPath({
+					name: "Ruleset",
+					pack: ["hxparse"],
+					params: [TPType(TPath( {
+						name: "Dynamic",
+						pack: []
+					}))]
+				}))]
+			}), macro $a{ruleIdents}),
+			pos: Context.currentPos()
+		});
 		return ret;
 	}
-	
+
 	#if macro
-	
+
+	#if unifill
+
+	static function handleUnicode(s:String, p:Position) {
+		function getPosInfo(i, l) {
+			var p = Context.getPosInfos(p);
+			return Context.makePosition({
+				min: p.min + i,
+				max: p.min + i + l,
+				file: p.file
+			});
+		}
+		var uLength = unifill.Unifill.uLength(s);
+		if (uLength == s.length) {
+			return s;
+		}
+		var buf = new StringBuf();
+		var itr = new unifill.InternalEncodingIter(s, 0, s.length);
+		while (itr.hasNext()) {
+			var i = itr.next();
+			var c = unifill.InternalEncoding.charAt(s, i);
+			switch (c) {
+				case '[':
+					buf.add("(");
+					var first = true;
+					while(true) {
+						if (!itr.hasNext()) {
+							Context.error("Unterminated regular expression", getPosInfo(itr.index, 1));
+						}
+						var i = itr.next();
+						var c = unifill.InternalEncoding.charAt(s, i);
+						switch (c) {
+							case "]":
+								break;
+							case "^" if (first):
+								var p = unifill.InternalEncoding.codePointCount(s, 0, i);
+								Context.error("Not-ranges are not supported in unicode strings", getPosInfo(i, 1));
+							case _:
+								if (!first) {
+									buf.add("|");
+								}
+								buf.add("(");
+								if (!itr.hasNext()) {
+									Context.error("Unterminated regular expression", getPosInfo(itr.index, 1));
+								}
+								var w = unifill.InternalEncoding.codePointWidthAt(s, i);
+								if (unifill.InternalEncoding.charAt(s, i + w) == "-") {
+									itr.next();
+									if (!itr.hasNext()) {
+										Context.error("Unterminated regular expression", getPosInfo(itr.index, 1));
+									}
+									var k = itr.next();
+									var cNext = unifill.InternalEncoding.charAt(s, k);
+									if (unifill.InternalEncoding.codePointAt(c, 0) > 0x7F) {
+										Context.error("Unicode ranges are not supported", getPosInfo(i, 3));
+									} else {
+										buf.add("[");
+										buf.add(c);
+										buf.add("-");
+										buf.add(cNext);
+										buf.add("]");
+									}
+								} else {
+									buf.add(c);
+								}
+								buf.add(")");
+						}
+						first = false;
+					}
+					buf.add(")");
+				case _:
+					buf.add(c);
+			}
+		}
+		return buf.toString();
+	}
+
+	#end
+
 	static function makeRule(fields:Map<String,Expr>, rule:Expr):String {
 		return switch(rule.expr) {
-			case EConst(CString(s)): s;
+			case EConst(CString(s)): #if unifill handleUnicode(s, rule.pos) #else s #end;
 			case EConst(CIdent(i)): makeRule(fields, fields.get(i));
 			case EBinop(OpAdd,e1,e2): "(" + makeRule(fields, e1) +")(" + makeRule(fields, e2) +")";
+			case EConst(CRegexp(r, opt)):
+				if (opt != "") {
+					Context.error("Cannot use regular expression flags for lexer rules", rule.pos);
+				}
+				r;
 			case _: Context.error("Invalid rule", rule.pos);
 		}
 	}
-	
+
 	static function transformRule(field:Field, e:Expr, t:ComplexType, fields:Map<String,Expr>) {
 		var el = switch(e.expr) {
 			case EArrayDecl(el): el;
@@ -78,11 +181,11 @@ class RuleBuilderImpl {
 			return loop(e);
 		});
 		var e = macro $a{el};
-		var e = macro hxparse.Lexer.buildRuleset($e);
+		var e = macro hxparse.Lexer.buildRuleset($e, $v{field.name});
 		field.kind = FVar(null, e);
 		return e;
 	}
-	
+
 	static function transformMapping(field:Field, e:Expr, offset:Int) {
 		var t = Context.typeof(e).follow();
 		var sl = [];
@@ -100,6 +203,6 @@ class RuleBuilderImpl {
 		field.kind = FVar(null, e);
 		return e;
 	}
-	
+
 	#end
 }
