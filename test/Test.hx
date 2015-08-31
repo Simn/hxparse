@@ -3,15 +3,15 @@ class Test {
 
 		var t0 = haxe.Timer.stamp();
 
-		var parser = new PrintfParser(byte.ByteData.ofString("Valu$$e: $-050.2f kg"));
+		var parser = new PrintfParser(haxe.io.Bytes.ofString("Valu$$e: $-050.2f kg"));
 		trace(parser.parse());
 
-		var parser = new JSONParser(byte.ByteData.ofString('{ "key": [true, false, null], "other\tkey": [12, 12.1, 0, 0.1, 0.9e, 0.9E, 9E-] }'), "jsontest");
+		var parser = new JSONParser(haxe.io.Bytes.ofString('{ "key": [true, false, null], "other\tkey": [12, 12.1, 0, 0.1, 0.9e, 0.9E, 9E-] }'), "jsontest");
 		trace(parser.parseJson());
 
 		// Using haxe.Utf8
 		var value = 'hello âê€𩸽ùあ𠀀ÊÀÁÂÃÄÅÆÇÈÉËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáãäåæçèéëìíîïðñòóôõöøúûüýþÿ№ unicode';
-		var lexer = new UnicodeTestLexer( byte.ByteData.ofString( value ), 'uft8-test' );
+		var lexer = new UnicodeTestLexer( haxe.io.Bytes.ofString( value ), 'uft8-test' );
 		var tokens = [];
 
 		try while (true) {
@@ -24,7 +24,7 @@ class Test {
 		var numTests = 0;
 		function eq(expected:Float, s:String) {
 			++numTests;
-			var lexer = new ArithmeticParser.ArithmeticLexer(byte.ByteData.ofString(s));
+			var lexer = new ArithmeticParser.ArithmeticLexer(haxe.io.Bytes.ofString(s));
 			var ts = new hxparse.LexerTokenSource(lexer, ArithmeticParser.ArithmeticLexer.tok);
 			var parser = new ArithmeticParser(ts);
 			var result = ArithmeticParser.ArithmeticEvaluator.eval(parser.parse());
