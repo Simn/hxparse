@@ -35,14 +35,14 @@ class Position {
 		return '$psource:characters $pmin-$pmax';
 	}
 
-	public function getLinePosition(input:byte.ByteData) {
+	public function getLinePosition(input:haxe.io.Bytes) {
 		var lineMin = 1;
 		var lineMax = 1;
 		var posMin = 0;
 		var posMax = 0;
 		var cur = 0;
 		while (cur < pmin) {
-			if (input.readByte(cur) == "\n".code) {
+			if (input.get(cur) == "\n".code) {
 				lineMin++;
 				posMin = cur + 1;
 			}
@@ -52,7 +52,7 @@ class Position {
 		posMax = posMin;
 		posMin = cur - posMin;
 		while (cur < pmax) {
-			if (input.readByte(cur) == "\n".code) {
+			if (input.get(cur) == "\n".code) {
 				lineMax++;
 				posMax = cur + 1;
 			}
@@ -72,7 +72,7 @@ class Position {
 
 		If `input` is null, the result is unspecified.
 	**/
-	public function format(input:byte.ByteData) {
+	public function format(input:haxe.io.Bytes) {
 		var linePos = getLinePosition(input);
 		if (linePos.lineMin != linePos.lineMax) {
 			return '${psource}:lines ${linePos.lineMin}-${linePos.lineMax}';

@@ -237,7 +237,7 @@ class LexEngine {
 		using `\\*`, `\\]` etc.
 	**/
 	public static function parse( pattern : String ) : Pattern {
-		var p = parseInner(byte.ByteData.ofString(pattern));
+		var p = parseInner(haxe.io.Bytes.ofString(pattern));
 		if( p == null ) throw "Invalid pattern '" + pattern + "'";
 		return p.pattern;
 	}
@@ -330,11 +330,11 @@ class LexEngine {
 		return out;
 	}
 
-	static function parseInner( pattern : byte.ByteData, i : Int = 0, pDepth : Int = 0 ) : { pattern: Pattern, pos: Int } {
+	static function parseInner( pattern : haxe.io.Bytes, i : Int = 0, pDepth : Int = 0 ) : { pattern: Pattern, pos: Int } {
 		var r = Empty;
 		var l = pattern.length;
 		while( i < l ) {
-			var c = pattern.readByte(i++);
+			var c = pattern.get(i++);
 			if (c > 255) throw c;
 			switch( c ) {
 			case '+'.code if (r != Empty):
@@ -358,10 +358,10 @@ class LexEngine {
 			case '['.code if (pattern.length > 1):
 				var range = 0;
 				var acc = [];
-				var not = pattern.readByte(i) == '^'.code;
+				var not = pattern.get(i) == '^'.code;
 				if( not ) i++;
 				while( true ) {
-					var c = pattern.readByte(i++);
+					var c = pattern.get(i++);
 					if( c == ']'.code ) {
 						if( range != 0 ) return null;
 						break;
@@ -376,7 +376,7 @@ class LexEngine {
 						}
 					} else {
 						if( c == '\\'.code )
-							c = pattern.readByte(i++);
+							c = pattern.get(i++);
 						if( range == 0 )
 							acc.push( { min : c, max : c } );
 						else {
@@ -392,12 +392,12 @@ class LexEngine {
 					g = cdiff(ALL_CHARS, g);
 				r = next(r, Match(g));
 			case '\\'.code:
-				c = pattern.readByte(i++);
+				c = pattern.get(i++);
 				if ( StringTools.isEof(c) ) c = '\\'.code;
 				else if (c >= "0".code && c <= "9".code) {
 					var v = c - 48;
 					while(true) {
-						var cNext = pattern.readByte(i);
+						var cNext = pattern.get(i);
 						if (cNext >= "0".code && cNext <= "9".code) {
 							v = v * 10 + (cNext - 48);
 							++i;

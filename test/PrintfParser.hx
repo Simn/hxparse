@@ -54,7 +54,7 @@ class PrintfLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 }
 
 class PrintfParser extends hxparse.Parser<hxparse.LexerTokenSource<PToken>, PToken> implements hxparse.ParserBuilder {
-	public function new(input:byte.ByteData) {
+	public function new(input:haxe.io.Bytes) {
 		var lexer = new PrintfLexer(input);
 		var ts = new hxparse.LexerTokenSource(lexer, PrintfLexer.tok);
 		super(ts);

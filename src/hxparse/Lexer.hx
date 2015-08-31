@@ -18,7 +18,7 @@ class Lexer {
 	**/
 	public var current(default, null):String;
 
-	var input:byte.ByteData;
+	var input:haxe.io.Bytes;
 	var source:String;
 	var pos:Int;
 
@@ -30,7 +30,7 @@ class Lexer {
 
 		If `input` is null, the result is unspecified.
 	**/
-	public function new(input:byte.ByteData, sourceName:String = "<null>") {
+	public function new(input:haxe.io.Bytes, sourceName:String = "<null>") {
 		current = "";
 		this.input = input;
 		source = sourceName;
@@ -83,7 +83,7 @@ class Lexer {
 			if (pos == input.length) {
 				break;
 			}
-			var i = input.readByte(pos);
+			var i = input.get(pos);
 			++pos;
 			state = state.trans.get(i);
 
@@ -95,9 +95,9 @@ class Lexer {
 				break;
 		}
 		pos = lastMatchPos;
-		current = input.readString(start, pos - start);
+		current = input.getString(start, pos - start);
 		if (lastMatch == null || lastMatch.final == -1)
-			throw new UnexpectedChar(String.fromCharCode(input.readByte(pos)), curPos());
+			throw new UnexpectedChar(String.fromCharCode(input.get(pos)), curPos());
 		return ruleset.functions[lastMatch.final](this);
 	}
 

@@ -21,7 +21,7 @@ class Utils {
 
 		If `input` or `f` are null, the result is unspecified.
 	**/
-	static public function catchErrors<T>(input:byte.ByteData, f:Void->T) {
+	static public function catchErrors<T>(input:haxe.io.Bytes, f:Void->T) {
 		try {
 			return f();
 		} catch(e:ParserError) {
