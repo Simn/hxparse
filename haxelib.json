@@ -4,7 +4,7 @@
   "license": "BSD",
   "classPath": "src",
   "description": "This library provides tools for creating lexers and parsers in haxe.",
-  "version": "3.0.0",
-  "releasenote": "restructured",
+  "version": "4.0.0",
+  "releasenote": "update",
   "contributors": ["Simn"]
 }
