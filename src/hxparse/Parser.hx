@@ -134,21 +134,21 @@ class Parser<S:TokenSource<Token>, Token> {
 	}
 	
 	/**
-		Throws `NoMatch` exception, which contains last matched position and token
+		Throws `NoMatch` exception, which contains last matched position and token.
 	**/
 	inline function noMatch() {
 		return new NoMatch(stream.curPos(), peek(0));
 	}
 	
 	/**
-		Throws `Unexpected` exception, which contains last matched position and token
+		Throws `Unexpected` exception, which contains last matched position and token.
 	**/
 	inline function unexpected():Dynamic {
 		throw new Unexpected(peek(0), stream.curPos());
 	}
 	
 	/**
-		Macro thar processes and returns the result of `switch`.
+		Macro that processes and returns the result of `switch`.
 	**/
 	@:access(hxparse.ParserBuilderImpl.transformSwitch)
 	static public macro function parse(e:haxe.macro.Expr) {
