@@ -1,0 +1,4 @@
+language: haxe
+
+hxml:
+  - build.hxml
