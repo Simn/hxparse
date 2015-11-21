@@ -93,7 +93,7 @@ class Parser<S:TokenSource<Token>, Token> {
 
 	/**
 		Returns the result of calling `f()` if a match is made, or `null`
-		otherwise`.
+		otherwise.
 	**/
 	@:dox(show)
 	function parseOptional<T>(f:Void->T) {
@@ -120,7 +120,11 @@ class Parser<S:TokenSource<Token>, Token> {
 			}
 		}
 	}
-
+	
+	/**
+		Returns the result of calling `f()` if a match is made, or throw
+		`Unexpected` otherwise.
+	**/
 	function parseExpect<T>(f:Void->T) {
 		try {
 			return f();
@@ -128,15 +132,24 @@ class Parser<S:TokenSource<Token>, Token> {
 			unexpected();
 		}
 	}
-
+	
+	/**
+		Throws `NoMatch` exception, which contains last matched position and token
+	**/
 	inline function noMatch() {
 		return new NoMatch(stream.curPos(), peek(0));
 	}
-
+	
+	/**
+		Throws `Unexpected` exception, which contains last matched position and token
+	**/
 	inline function unexpected():Dynamic {
 		throw new Unexpected(peek(0), stream.curPos());
 	}
-
+	
+	/**
+		Macro thar processes and returns the result of `switch`.
+	**/
 	@:access(hxparse.ParserBuilderImpl.transformSwitch)
 	static public macro function parse(e:haxe.macro.Expr) {
 		switch (e.expr) {
