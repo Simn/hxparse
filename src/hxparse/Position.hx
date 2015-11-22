@@ -77,7 +77,7 @@ class Position {
 		if (linePos.lineMin != linePos.lineMax) {
 			return '${psource}:lines ${linePos.lineMin}-${linePos.lineMax}';
 		} else {
-			return '${psource}:${linePos.lineMin}:characters ${linePos.posMin}-${linePos.posMax}';
+			return '${psource}:${linePos.lineMin}: characters ${linePos.posMin}-${linePos.posMax}';
 		}
 	}
 
