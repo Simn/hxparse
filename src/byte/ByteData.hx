@@ -11,7 +11,7 @@ abstract ByteData(haxe.io.Bytes) {
 		this = data;
 	}
 
-	inline static public function ofString(s:String):ByteData {
+	static public function ofString(s:String):ByteData {
 		var str = "";
 		
 		try {
