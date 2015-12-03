@@ -12,7 +12,15 @@ abstract ByteData(haxe.io.Bytes) {
 	}
 
 	inline static public function ofString(s:String):ByteData {
-		return new ByteData(haxe.io.Bytes.ofString(s));
+		var str = "";
+		
+		try {
+			str = haxe.Utf8.decode(s);		
+		} catch (e:Dynamic) {
+			str = s;
+		}
+		
+		return new ByteData(haxe.io.Bytes.ofString(str));
 	}
 
 	inline public function readString(pos:Int, len:Int) {
