@@ -1,7 +1,7 @@
 hxparse
 =======
 
-[![TravisCI Build Status](https://api.travis-ci.org/Simn/hxparse.svg?branch=master)](https://travis-ci.org/Simn/hxparse)
+[![TravisCI Build Status](https://api.travis-ci.org/Simn/hxparse.svg?branch=development)](https://travis-ci.org/Simn/hxparse)
 
 This library provides tools for creating lexers and parsers in Haxe.
 
