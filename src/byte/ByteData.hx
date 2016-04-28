@@ -15,6 +15,10 @@ abstract ByteData(haxe.io.Bytes) {
 		return new ByteData(haxe.io.Bytes.ofString(s));
 	}
 
+	inline static public function ofBytes(b:haxe.io.Bytes):ByteData {
+		return new ByteData(b);
+	}
+
 	inline public function readString(pos:Int, len:Int) {
 		return this.getString(pos, len);
 	}
