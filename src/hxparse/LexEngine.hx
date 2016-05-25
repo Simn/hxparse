@@ -331,6 +331,25 @@ class LexEngine {
 	}
 
 	static function parseInner( pattern : byte.ByteData, i : Int = 0, pDepth : Int = 0 ) : { pattern: Pattern, pos: Int } {
+		function readChar() {
+			var c = pattern.readByte(i++);
+			if ( StringTools.isEof(c) ) c = '\\'.code;
+			else if (c >= "0".code && c <= "9".code) {
+				var v = c - 48;
+				while(true) {
+					var cNext = pattern.readByte(i);
+					if (cNext >= "0".code && cNext <= "9".code) {
+						v = v * 10 + (cNext - 48);
+						++i;
+					} else {
+						break;
+					}
+				}
+				c = v;
+			}
+			return c;
+		}
+
 		var r = Empty;
 		var l = pattern.length;
 		while( i < l ) {
@@ -375,8 +394,9 @@ class LexEngine {
 							range = last.min;
 						}
 					} else {
-						if( c == '\\'.code )
-							c = pattern.readByte(i++);
+						if( c == '\\'.code ) {
+							c = readChar();
+						}
 						if( range == 0 )
 							acc.push( { min : c, max : c } );
 						else {
@@ -392,21 +412,7 @@ class LexEngine {
 					g = cdiff(ALL_CHARS, g);
 				r = next(r, Match(g));
 			case '\\'.code:
-				c = pattern.readByte(i++);
-				if ( StringTools.isEof(c) ) c = '\\'.code;
-				else if (c >= "0".code && c <= "9".code) {
-					var v = c - 48;
-					while(true) {
-						var cNext = pattern.readByte(i);
-						if (cNext >= "0".code && cNext <= "9".code) {
-							v = v * 10 + (cNext - 48);
-							++i;
-						} else {
-							break;
-						}
-					}
-					c = v;
-				}
+				c = readChar();
 				r = next(r, Match(single(c)));
 			default:
 				r = next(r, Match(single(c)));
