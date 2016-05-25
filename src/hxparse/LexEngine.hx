@@ -333,8 +333,12 @@ class LexEngine {
 	static function parseInner( pattern : byte.ByteData, i : Int = 0, pDepth : Int = 0 ) : { pattern: Pattern, pos: Int } {
 		function readChar() {
 			var c = pattern.readByte(i++);
-			if ( StringTools.isEof(c) ) c = '\\'.code;
-			else if (c >= "0".code && c <= "9".code) {
+			if ( StringTools.isEof(c) ) {
+				c = '\\'.code;
+			} else if (c == "x".code) {
+				c = Std.parseInt("0x" + pattern.readString(i, 2));
+				i += 2;
+			} else if (c >= "0".code && c <= "9".code) {
 				var v = c - 48;
 				while(true) {
 					var cNext = pattern.readByte(i);
