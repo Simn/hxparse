@@ -18,7 +18,9 @@ class UnicodeTestLexer extends Lexer implements RuleBuilder {
 		'\u00CA' => lexer.current, // Ê
 		'\u20AC' => lexer.current,	// €
 		'\u{29e3d}' => lexer.current, // 𩸽
-		'[ a-zA-Z0-9ÀÁÂÃÄÅÆÇÈÉËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáãäåæçèéëìíîïðñòóôõöøúûüýþÿ№あ𠀀]' => lexer.current,
+		'[ a-zA-Z0-9ÀÁÂÔÕÖØÙÚÛÜÝÞßàáãäåæçèéëìíîïðñòóôõöøúûüýþÿ№あ𠀀]' => lexer.current,
+		'\\195[\\131-\\139]' => lexer.current,
+		'\\xC3[\\x8c-\\x93]' => lexer.current,
 		//'[Ã-Ë]' => lexer.current
 	];
 
