@@ -2,9 +2,6 @@ build-each.hxml
 -lib unifill
 --each
 
--dce std
--xml bin/hxparse.xml
-
 --next
 -D dump=pretty
 -neko bin/hxparse.n

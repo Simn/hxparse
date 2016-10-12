@@ -1,0 +1,6 @@
+build-each.hxml
+
+-dce std
+-neko neko.n
+--no-output
+-xml bin/hxparse.xml
