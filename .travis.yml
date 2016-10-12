@@ -1,0 +1,8 @@
+language: haxe
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install mono-devel
+
+hxml:
+  - build.hxml
