@@ -33,7 +33,7 @@ class JSONLexer extends hxparse.Lexer implements hxparse.RuleBuilder {
 		"true" => TTrue,
 		"false" => TFalse,
 		"null" => TNull,
-		"-?(([1-9][0-9]*)|0)(.[0-9]+)?([eE][\\+\\-]?[0-9]?)?" => TNumber(lexer.current),
+		"-?(([1-9][0-9]*)|0)(.[0-9]+)?([eE][\\+\\-]?[0-9]+)?" => TNumber(lexer.current),
 		'"' => {
 			buf = new StringBuf();
 			lexer.token(string);
