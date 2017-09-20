@@ -12,13 +12,13 @@ class State {
 	/**
 		The ids of the final states.
 	**/
-	public var final:Int;
+	public var finalId:Int;
 
 	/**
 		Creates a new State.
 	**/
 	public function new() {
-		final = -1;
+		finalId = -1;
 		trans = new haxe.ds.Vector(256);
 	}
 }

@@ -82,11 +82,11 @@ class LexEngine {
 			for( f in finals )
 				for( n in nodes )
 					if( n == f ) {
-						s.final = n.pid;
+						s.finalId = n.pid;
 						return;
 					}
 		}
-		if (s.final == -1)
+		if (s.finalId == -1)
 			setFinal();
 		return s;
 	}
@@ -173,35 +173,35 @@ class LexEngine {
 		return new Node(uid++, pid);
 	}
 
-	function initNode( p : Pattern, final : Node, pid : Int ) {
+	function initNode( p : Pattern, finalId : Node, pid : Int ) {
 		return switch( p ) {
 		case Empty:
-			final;
+			finalId;
 		case Match(c):
 			var n = node(pid);
-			n.trans.push({ chars : c, n : final });
+			n.trans.push({ chars : c, n : finalId });
 			n;
 		case Star(p):
 			var n = node(pid);
 			var an = initNode(p,n,pid);
 			n.epsilon.push(an);
-			n.epsilon.push(final);
+			n.epsilon.push(finalId);
 			n;
 		case Plus(p):
 			var n = node(pid);
 			var an = initNode(p,n,pid);
 			n.epsilon.push(an);
-			n.epsilon.push(final);
+			n.epsilon.push(finalId);
 			an;
 		case Next(a,b):
-			initNode(a, initNode(b, final,pid),pid);
+			initNode(a, initNode(b, finalId,pid),pid);
 		case Choice(a,b):
 			var n = node(pid);
-			n.epsilon.push(initNode(a,final,pid));
-			n.epsilon.push(initNode(b,final,pid));
+			n.epsilon.push(initNode(a,finalId,pid));
+			n.epsilon.push(initNode(b,finalId,pid));
 			n;
 		case Group(p):
-			initNode(p, final, pid);
+			initNode(p, finalId, pid);
 		}
 	}
 

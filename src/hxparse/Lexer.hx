@@ -76,7 +76,7 @@ class Lexer {
 		#end
 
 		while(true) {
-			if (state.final > -1) {
+			if (state.finalId > -1) {
 				lastMatch = state;
 				lastMatchPos = pos;
 			}
@@ -96,9 +96,9 @@ class Lexer {
 		}
 		pos = lastMatchPos;
 		current = input.readString(start, pos - start);
-		if (lastMatch == null || lastMatch.final == -1)
+		if (lastMatch == null || lastMatch.finalId == -1)
 			throw new UnexpectedChar(String.fromCharCode(input.readByte(pos)), curPos());
-		return ruleset.functions[lastMatch.final](this);
+		return ruleset.functions[lastMatch.finalId](this);
 	}
 
 	#if expose_lexer_state
