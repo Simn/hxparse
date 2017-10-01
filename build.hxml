@@ -22,8 +22,8 @@ build-each.hxml
 --next
 -cpp bin/cpp
 
---next
--java bin/java
+#--next
+#-java bin/java
 
 --next
 -cs bin/cs
