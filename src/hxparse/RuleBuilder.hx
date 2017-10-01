@@ -149,11 +149,11 @@ class RuleBuilderImpl {
 	#end
 
 	static function makeRule(fields:Map<String,Expr>, rule:Expr):String {
-		return switch(rule.expr) {
-			case EConst(CString(s)): #if unifill handleUnicode(s, rule.pos) #else s #end;
-			case EConst(CIdent(i)): makeRule(fields, fields.get(i));
-			case EBinop(OpAdd,e1,e2): "(" + makeRule(fields, e1) +")(" + makeRule(fields, e2) +")";
-			case EConst(CRegexp(r, opt)):
+		return switch(rule) {
+			case macro $v{(s:String)}: #if unifill handleUnicode(s, rule.pos) #else s #end;
+			case macro $i{i}: makeRule(fields, fields.get(i));
+			case macro $e1 + $e2: "(" + makeRule(fields, e1) +")(" + makeRule(fields, e2) +")";
+			case {expr:EConst(CRegexp(r, opt))}:
 				if (opt != "") {
 					Context.error("Cannot use regular expression flags for lexer rules", rule.pos);
 				}
