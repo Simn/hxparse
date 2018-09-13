@@ -34,7 +34,7 @@ class LexerGraph<T> {
 			return map[state];
 		}
 		var attrs = [Label("")];
-		if (state.final > -1) {
+		if (state.finalId > -1) {
 			attrs.push(Shape(Doublecircle));
 		}
 		
