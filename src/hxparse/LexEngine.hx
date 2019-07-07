@@ -208,8 +208,8 @@ class LexEngine {
 	// ----------------------- PATTERN PARSING ---------------------------
 
 	static inline var MAX_CODE = 255;
-	static var EMPTY = [];
-	static var ALL_CHARS = [ { min : 0, max : MAX_CODE } ];
+	static var EMPTY:Charset = [];
+	static var ALL_CHARS = [ new CharRange( 0, MAX_CODE ) ];
 
 	static inline function single( c : Int ) : Charset {
 		return [ { min : c, max : c } ];
@@ -278,7 +278,7 @@ class LexEngine {
 	static function ccomplement( c : Charset ) {
 		var first = c[0];
 		var start = first != null && first.min == -1 ? c.shift().max + 1 : -1;
-		var out = [];
+		var out: Charset = [];
 		for( k in c ) {
 			out.push( { min : start, max : k.min - 1 } );
 			start = k.max + 1;
@@ -380,7 +380,7 @@ class LexEngine {
 				return { pattern: Group(r), pos: i};
 			case '['.code if (pattern.length > 1):
 				var range = 0;
-				var acc = [];
+				var acc:Charset = [];
 				var not = pattern.readByte(i) == '^'.code;
 				if( not ) i++;
 				while( true ) {
@@ -409,7 +409,7 @@ class LexEngine {
 						}
 					}
 				}
-				var g = [];
+				var g:Charset = [];
 				for( k in acc )
 					g = cunion(g, [k]);
 				if( not )
@@ -437,7 +437,15 @@ private enum Pattern {
 	Group ( p : Pattern );
 }
 
-private typedef Charset = Array<{ min : Int, max : Int }>;
+@:structInit private class CharRange {
+   public var min:Int;
+   public var max:Int;
+   public function new(min,max) {
+      this.min = min;
+      this.max = max;
+   }
+}
+private typedef Charset = Array<CharRange>;
 
 private class Node {
 	public var id : Int;
