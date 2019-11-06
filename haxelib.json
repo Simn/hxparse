@@ -4,7 +4,7 @@
   "license": "MIT",
   "classPath": "src",
   "description": "This library provides tools for creating lexers and parsers in haxe.",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "releasenote": "update",
   "contributors": ["Simn"]
 }
