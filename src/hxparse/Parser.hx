@@ -147,6 +147,7 @@ class Parser<S:TokenSource<Token>, Token> {
 		throw new Unexpected(peek(0), stream.curPos());
 	}
 	
+	#if !macro
 	/**
 		Macro that processes and returns the result of `switch`.
 	**/
@@ -159,4 +160,5 @@ class Parser<S:TokenSource<Token>, Token> {
 				return haxe.macro.Context.error("Expected switch expression", e.pos);
 		}
 	}
+	#end
 }
