@@ -18,7 +18,7 @@ private enum CaseGroup {
 }
 
 class ParserBuilderImpl {
-	static public function build():Array<haxe.macro.Field> {
+	static public function build():Array<Field> {
 		var fields = Context.getBuildFields();
 		for (field in fields) {
 			switch(field.kind) {
