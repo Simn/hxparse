@@ -190,10 +190,10 @@ class RuleBuilderImpl {
 		var t = Context.typeof(e).follow();
 		var sl = [];
 		switch(t) {
-			case TAnonymous(a):
-				for (f in a.get().fields) {
-					var name = macro @:pos(e.pos) $i{f.name};
-					var cName = f.name.charAt(offset).toLowerCase() + f.name.substr(offset + 1);
+			case TAnonymous(_.get() => {status: AEnumStatics(_.get() => e)}):
+				for (f in e.names) {
+					var name = macro @:pos(e.pos) $i{f};
+					var cName = f.charAt(offset).toLowerCase() + f.substr(offset + 1);
 					sl.push(macro $v{cName} => $name);
 				}
 			case _:
